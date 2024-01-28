@@ -11,16 +11,15 @@ Standard Maximum Likelihood
 """
 class Likelihood:
 
-    def __init__(self, data_samples: torch.tensor, energy_model: EnergyModel, sampler: EnergySampler):
+    def __init__(self, energy_model: EnergyModel, sampler: EnergySampler):
         
-        self.data_samples = data_samples
         self.energy_model = energy_model
         self.sampler = sampler
         
 
-    def gradient(self, model_samples):
+    def gradient(self, data_samples: torch.tensor, model_samples):
 
-        grads_data_component = self.energy_model.avg_param_grad(self.data_samples)
+        grads_data_component = self.energy_model.avg_param_grad(data_samples)
         grads_model_component = self.energy_model.avg_param_grad(model_samples)
 
         for name, param in self.energy_model.params.items():

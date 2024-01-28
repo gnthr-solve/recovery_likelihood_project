@@ -4,7 +4,22 @@ import scipy.stats as st
 import re
 
 from itertools import product
+from functools import wraps
 from torch.distributions import MultivariateNormal
+
+
+"""
+No-Grad Decorator
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def no_grad_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with torch.no_grad():
+            result = func(*args, **kwargs)
+        return result
+    return wrapper
+
 """
 Helper functions
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,4 +72,5 @@ if __name__ == "__main__":
 
     for sample in mvn_iterator:
         print(sample)
+
 

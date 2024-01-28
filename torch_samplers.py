@@ -7,7 +7,7 @@ import torch.linalg as tla
 
 from abc import ABC, abstractmethod
 from test_distributions import Distribution, EnergyDistribution
-from helper_tools import MultivariateNormalIterator
+from helper_tools import MultivariateNormalIterator, no_grad_decorator
 
 """
 Samplers
@@ -38,12 +38,10 @@ class ULASampler(EnergySampler):
     def _gen_z_iterator(self, x: torch.tensor, N: int):
 
         #print(self.x)
-        
-        shape = x.shape
 
         mean = torch.zeros_like(x)
 
-        cov = torch.diag(torch.ones(shape = shape))
+        cov = torch.diag(torch.ones_like(x))
 
         self._z_iterator = MultivariateNormalIterator(mean, cov, N)
 
@@ -58,23 +56,24 @@ class ULASampler(EnergySampler):
         
         # Compute x_new without tracking gradients
         x_new = x - self.epsilon * grad + torch.sqrt(2*self.epsilon) * z
-
+        
         return x_new
 
 
+    @no_grad_decorator
     def sample(self, x_0: torch.tensor, N: int, energy_distribution: EnergyDistribution, **kwargs):
         
         x = torch.atleast_1d(x_0)
 
         self.energy_dist = energy_distribution
 
-        self._gen_z_iterator(N)
+        self._gen_z_iterator(x, N)
 
         sample_list = []
 
-        for j in range(N):
+        for _ in range(N):
 
-            x_new = self._iterate(x, j, **kwargs)
+            x_new = self._iterate(x, **kwargs)
             sample_list.append(x_new)
             x = x_new
 
@@ -103,12 +102,10 @@ class MALASampler(EnergySampler):
     def _gen_z_iterator(self, x: torch.tensor, N: int):
 
         #print(self.x)
-        
-        shape = x.shape
 
         mean = torch.zeros_like(x)
 
-        cov = torch.diag(torch.ones(shape = shape))
+        cov = torch.diag(torch.ones_like(x))
 
         self._z_iterator = MultivariateNormalIterator(mean, cov, N)
 
@@ -147,19 +144,20 @@ class MALASampler(EnergySampler):
             return x
         
 
+    @no_grad_decorator
     def sample(self, x_0: torch.tensor, N: int, energy_distribution: EnergyDistribution, **kwargs):
         
         x = torch.atleast_1d(x_0)
 
         self.energy_dist = energy_distribution
 
-        self._gen_z_iterator(N)
+        self._gen_z_iterator(x, N)
 
         sample_list = []
 
-        for j in range(N):
+        for _ in range(N):
 
-            x_new = self._iterate(x, j, **kwargs)
+            x_new = self._iterate(x, **kwargs)
             sample_list.append(x_new)
             x = x_new
 
@@ -239,6 +237,7 @@ class HMCSampler(EnergySampler):
             return x
 
 
+    @no_grad_decorator
     def sample(self, x_0: torch.tensor, N: int, energy_distribution: EnergyDistribution, **kwargs):
         
         x = torch.atleast_1d(x_0)
