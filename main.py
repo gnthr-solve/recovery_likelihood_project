@@ -74,10 +74,10 @@ def gaussian_test():
     likelihood = Likelihood(energy_model = model, sampler = sampler)
 
     ### Training ###
-    batch_size = 100
+    batch_size = 200
     train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle=True)
 
-    optimizer = Adam(model.parameters(), lr=1e-2)
+    optimizer = Adam(model.parameters(), lr=1e-1)
     scheduler = ExponentialLR(optimizer, gamma=0.9)
     
     x_0 = torch.tensor([0, 0], dtype = torch.float32)
@@ -89,13 +89,20 @@ def gaussian_test():
             # reset gradients 
             optimizer.zero_grad()
             
+            '''
             model_samples = likelihood.gen_model_samples(
                 x_0 = x_0,
-                batch_size = 2*batch_size,
+                batch_size = 10*batch_size,
             )
             x_0 = model_samples[-1]
             #print(x_0)
-
+            '''
+            model_mv_normal = MultivariateNormal(
+                loc = model.params['mu'], 
+                covariance_matrix = model.params['Sigma'],
+            )
+            model_samples = model_mv_normal.sample(sample_shape= (2*batch_size, ))
+            
             likelihood.gradient(data_samples = X_batch, model_samples = model_samples[batch_size:])
             
             print(f"{it}_{b+1}/{epochs} Parameters:")
