@@ -2,7 +2,7 @@
 import torch
 
 from ebm import EnergyModel
-from torch_samplers import EnergySampler
+from basic_samplers import EnergySampler
 
 
 """

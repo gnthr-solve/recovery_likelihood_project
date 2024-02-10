@@ -12,7 +12,7 @@ def main():
     from tqdm import trange, tqdm
 
     from test_models import MultivariateGaussianModel
-    from torch_samplers import ULASampler, MALASampler, HMCSampler
+    from basic_samplers import ULASampler, MALASampler, HMCSampler
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,7 +31,7 @@ def gaussian_test():
     from tqdm import trange, tqdm
 
     from test_models import MultivariateGaussianModel
-    from torch_samplers import ULASampler, MALASampler, HMCSampler
+    from basic_samplers import ULASampler, MALASampler, HMCSampler
     from likelihood import Likelihood
 
     # check computation backend to use
@@ -65,9 +65,9 @@ def gaussian_test():
 
     ### Instantiate Sampler with initial Parameters ###
     epsilon = torch.tensor(0.5, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon)
+    #sampler = ULASampler(epsilon = epsilon)
     #sampler = MALASampler(epsilon = epsilon)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2))
+    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2))
 
 
     ### Instantiate Standard Likelihood ###
@@ -83,16 +83,17 @@ def gaussian_test():
     x_0 = torch.tensor([0, 0], dtype = torch.float32)
     epochs = 10
     pbar   = tqdm(range(epochs))
+
     for it in pbar:
         for b, X_batch in enumerate(train_loader):
             
             # reset gradients 
             optimizer.zero_grad()
             
-            '''
+            
             model_samples = likelihood.gen_model_samples(
                 x_0 = x_0,
-                batch_size = 10*batch_size,
+                batch_size = 2*batch_size,
             )
             x_0 = model_samples[-1]
             #print(x_0)
@@ -102,7 +103,8 @@ def gaussian_test():
                 covariance_matrix = model.params['Sigma'],
             )
             model_samples = model_mv_normal.sample(sample_shape= (2*batch_size, ))
-            
+            '''
+
             likelihood.gradient(data_samples = X_batch, model_samples = model_samples[batch_size:])
             
             print(f"{it}_{b+1}/{epochs} Parameters:")

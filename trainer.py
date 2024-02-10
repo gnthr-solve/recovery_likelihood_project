@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import ExponentialLR
 from tqdm import trange, tqdm
 
 from test_models import MultivariateGaussianModel
-from torch_samplers import ULASampler, MALASampler, HMCSampler
+from basic_samplers import ULASampler, MALASampler, HMCSampler
 from likelihood import Likelihood
 
 class Trainer:

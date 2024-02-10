@@ -12,9 +12,8 @@ from helper_tools import MultivariateNormalIterator, no_grad_decorator
 """
 Samplers
 -------------------------------------------------------------------------------------------------------------------------------------------
-Use standard numpy instead of torch and are meant to use the  distribution classes, 
-for which a analytical expression of the energy function and its gradient is hardcoded.
-This should allow to check whether the torch implementations using autograd produce the same result.
+Use torch and are meant to use the  distribution classes, 
+for which a analytical expression of the energy function and its gradient is hardcoded or calculated via autograd
 """
 
 class EnergySampler(ABC):
@@ -125,7 +124,7 @@ class MALASampler(EnergySampler):
     
 
     def _accept_reject(self, x: torch.tensor, x_hat: torch.tensor):
-    
+        
         x_energy = self.energy_dist.energy(x)
         x_hat_energy = self.energy_dist.energy(x_hat)
 
@@ -266,5 +265,27 @@ class HMCSampler(EnergySampler):
 
 
 if __name__=="__main__":
+    
+    from test_models import MultivariateGaussianModel
 
-    pass
+    ### Instantiate Model with initial Parameters ###
+    mu_0 = torch.tensor([2, 2], dtype = torch.float32)
+    Sigma_0 = torch.tensor(
+        [[2, 0],
+         [0, 1],],
+        dtype=torch.float32,
+    )
+    model = MultivariateGaussianModel(mu_0 = mu_0, Sigma_0 = Sigma_0)
+
+
+    ### Instantiate Sampler with initial Parameters ###
+    epsilon = torch.tensor(0.5, dtype = torch.float32)
+    #sampler = ULASampler(epsilon = epsilon)
+    sampler = MALASampler(epsilon = epsilon)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2))
+
+    num = 20
+    x_0 = torch.tensor([0, 0], dtype = torch.float32)
+
+    model_samples = sampler.sample(x_0, num, model)
+    print(model_samples)

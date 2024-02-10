@@ -61,7 +61,7 @@ class EnergyModel(nn.Module):
             energy = self.energy(x)
 
             # Compute gradients with respect to parameters
-            energy.backward(torch.ones_like(energy), retain_graph = True) 
+            energy.backward(torch.ones_like(energy), retain_graph = False) 
 
             # Extract gradients from the parameters
             param_grads = {name: param.grad/batch_size for name, param in self.params.items()}
