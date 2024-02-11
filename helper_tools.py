@@ -1,4 +1,5 @@
 import torch
+import torch.linalg as tla
 import numpy as np
 import scipy.stats as st
 import re
@@ -24,7 +25,14 @@ def no_grad_decorator(func):
 Helper functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-
+def quadratic_form_batch(x_batch: torch.tensor, matrix: torch.tensor):
+    
+    result = tla.vecdot(
+        torch.matmul(x_batch, matrix),
+        x_batch
+    )
+    
+    return result
 
 """
 Helper Classes
