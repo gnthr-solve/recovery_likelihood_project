@@ -3,10 +3,11 @@ import torch
 import torch.linalg as tla
 
 from ebm import EnergyModel
+from helper_tools import quadratic_form_batch
 
 
 """
-Simple Linear Model
+Multivariate Gaussian Model
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class MultivariateGaussianModel(EnergyModel):
@@ -60,7 +61,7 @@ class MultivariateGaussianModel(EnergyModel):
 Simple Linear Model
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-class Linear(EnergyModel):
+class SimpleLinear(EnergyModel):
 
     def __init__(self, theta_0: torch.tensor, C_0: torch.tensor):
         super().__init__()
@@ -81,6 +82,26 @@ class Linear(EnergyModel):
 
 
 
+"""
+Simple Linear Model
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class VisibleBoltzmann(EnergyModel):
+
+    def __init__(self, W_0: torch.tensor):
+        super().__init__()
+        self.params['W'] = W_0
+
+    
+    def energy(self, x: torch.tensor):
+
+        W = self.params['W']
+
+        x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
+
+        result = quadratic_form_batch(x, W)
+
+        return -result/2
 
 
 """
@@ -92,7 +113,7 @@ def linear_test():
     theta = torch.tensor([2, 3], dtype = torch.float32)
     C = torch.tensor(5, dtype = torch.float32)
     
-    model = Linear(theta_0 = theta, C_0 = C)
+    model = SimpleLinear(theta_0 = theta, C_0 = C)
 
     x = torch.tensor(
         [[2, 1],

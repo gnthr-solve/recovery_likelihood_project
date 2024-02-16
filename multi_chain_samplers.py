@@ -14,9 +14,9 @@ from helper_tools import no_grad_decorator, quadratic_form_batch
 Multi-Chain Energy Sampler Base Class
 -------------------------------------------------------------------------------------------------------------------------------------------
 Aspects TODO and to decide:
-- What should the chain length be? (currently N/chain_num i.e. all samples are taken into account)
+- What should the chain length be?
 - Should the number of chains continue to be determined by the setup batch?
-- How should the next sample sets start batches be determined?
+- How should the next sample sets start batches be determined? (currently the last batch of the previous call)
 """
 class EnergySamplerMC(ABC):
 
@@ -40,10 +40,10 @@ class EnergySamplerMC(ABC):
 
 
     @no_grad_decorator
-    def sample(self, N: int): 
+    def sample(self, N: int, burnin_offset: int = 0): 
         ### Template Method ###
 
-        chain_length = int(torch.ceil( N / self.chain_num ))
+        chain_length = int(torch.ceil( N / self.chain_num )) + burnin_offset
         shape = (chain_length, self.chain_num, self.data_dim)
 
         self.z_iterator.generate(chain_length)
