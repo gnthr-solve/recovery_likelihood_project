@@ -2,7 +2,6 @@
 import torch
 import torch.linalg as tla
 
-from torch.distributions import MultivariateNormal
 from abc import ABC, abstractmethod
 
 from ebm import EnergyModel
@@ -18,7 +17,7 @@ Aspects TODO and to decide:
 - Should the number of chains continue to be determined by the setup batch?
 - How should the next sample sets start batches be determined? (currently the last batch of the previous call)
 """
-class EnergySamplerMC(ABC):
+class EnergySampler(ABC):
 
     def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
 
@@ -40,10 +39,10 @@ class EnergySamplerMC(ABC):
 
 
     @no_grad_decorator
-    def sample(self, N: int, burnin_offset: int = 0): 
+    def sample(self, num_samples: int, burnin_offset: int = 0): 
         ### Template Method ###
 
-        chain_length = int(torch.ceil( N / self.chain_num )) + burnin_offset
+        chain_length = int(torch.ceil( num_samples / self.chain_num )) + burnin_offset
         shape = (chain_length, self.chain_num, self.data_dim)
 
         self.z_iterator.generate(chain_length)
@@ -59,7 +58,8 @@ class EnergySamplerMC(ABC):
 
         #take last sample batch as start batch for next call
         self.curr_state_batch = raw_samples[-1, :, :]
-
+        raw_samples = raw_samples[burnin_offset:, :, :]
+        
         return raw_samples.reshape(shape = (chain_length * self.chain_num, self.data_dim))
 
 
@@ -68,7 +68,7 @@ Unadjusted Langevin Algorithm
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-class ULASamplerMC(EnergySamplerMC):
+class ULASampler(EnergySampler):
 
     def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
@@ -97,7 +97,7 @@ Metropolis Adjusted Langevin Algorithm
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-class MALASamplerMC(EnergySamplerMC):
+class MALASampler(EnergySampler):
 
     def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
@@ -146,7 +146,7 @@ class MALASamplerMC(EnergySamplerMC):
 Hamiltonian Monte Carlo
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-class HMCSamplerMC(EnergySamplerMC):
+class HMCSampler(EnergySampler):
 
     def __init__(self, epsilon: torch.tensor, L: int, M: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
@@ -231,9 +231,9 @@ if __name__=="__main__":
 
     ### Instantiate Sampler with initial Parameters ###
     epsilon = torch.tensor(0.5, dtype = torch.float32)
-    #sampler = ULASamplerMC(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = MALASamplerMC(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = HMCSamplerMC(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
     num = torch.tensor(16, dtype = torch.float32)
     

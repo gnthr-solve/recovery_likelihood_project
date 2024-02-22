@@ -12,7 +12,6 @@ def main():
     from tqdm import trange, tqdm
 
     from test_models import MultivariateGaussianModel
-    from basic_samplers import ULASampler, MALASampler, HMCSampler
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,7 +30,7 @@ def gaussian_test():
     from tqdm import trange, tqdm
 
     from test_models import MultivariateGaussianModel
-    from basic_samplers import ULASampler, MALASampler, HMCSampler
+    from mc_samplers import ULASampler, MALASampler, HMCSampler
     from likelihood import Likelihood
 
     # check computation backend to use
