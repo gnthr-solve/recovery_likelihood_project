@@ -3,7 +3,7 @@ import torch
 import torch.linalg as tla
 
 from ebm import EnergyModel
-from helper_tools import quadratic_form_batch
+from helper_tools import quadratic_form_batch, check_nan, in_out_logger
 
 
 """
@@ -18,7 +18,7 @@ class MultivariateGaussianModel(EnergyModel):
         self.params['Sigma'] = Sigma_0
         self.Sigma_inv = (lambda : torch.inverse(self.params['Sigma']))
 
-
+    #@in_out_logger
     def kernel(self, x: torch.tensor):
 
         # x can be of shape (d,) or (n, d)
@@ -35,10 +35,11 @@ class MultivariateGaussianModel(EnergyModel):
         )
 
         kernel_value = torch.exp(exponent)
-
+    
         return kernel_value
 
 
+    #@check_nan
     def energy(self, x):
 
         energy = -torch.log(self.kernel(x))

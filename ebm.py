@@ -49,14 +49,14 @@ class EnergyModel(nn.Module):
 
         !!!This implementation aggregates the parameter gradients of a batch by summing them up!!!
         """
-
+        
         #Unsqueeze for if just one datapoint is passed
         x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x
 
         with torch.enable_grad():
             
             batch_size = x.shape[0]
-
+            
             # Compute the energy
             energy = self.energy(x)
 
@@ -67,6 +67,10 @@ class EnergyModel(nn.Module):
             param_grads = {name: param.grad/batch_size for name, param in self.params.items()}
             # Clear the gradients for the next computation
             self.zero_grad()
+
+            #for param_name, value in param_grads.items():
+            #    print(f'{param_name} grad:\n {value}')
+            
             return param_grads
         
 

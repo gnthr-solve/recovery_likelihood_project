@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from ebm import EnergyModel
 from gaussian_iter_strategies import IterStrategy, StdIterStrategy, MomentumIterStrategy
-from helper_tools import no_grad_decorator, quadratic_form_batch
+from helper_tools import no_grad_decorator, quadratic_form_batch, check_nan
 
 
 """
@@ -43,6 +43,7 @@ class EnergySampler(ABC):
         ### Template Method ###
 
         chain_length = int(torch.ceil( num_samples / self.chain_num )) + burnin_offset
+        #print(chain_length)
         shape = (chain_length, self.chain_num, self.data_dim)
 
         self.z_iterator.generate(chain_length)
@@ -59,8 +60,8 @@ class EnergySampler(ABC):
         #take last sample batch as start batch for next call
         self.curr_state_batch = raw_samples[-1, :, :]
         raw_samples = raw_samples[burnin_offset:, :, :]
-        
-        return raw_samples.reshape(shape = (chain_length * self.chain_num, self.data_dim))
+
+        return raw_samples.reshape(shape = ((chain_length-burnin_offset) * self.chain_num, self.data_dim))
 
 
 """
@@ -83,6 +84,7 @@ class ULASampler(EnergySampler):
         
         # Retrieve generated z_batch
         z_batch = next(self.z_iterator)
+        #print(z_batch[:-10])
         
         # Compute new_state_batch without tracking gradients
         new_state_batch = x_batch - self.epsilon * grad_batch + torch.sqrt(2*self.epsilon) * z_batch
@@ -116,26 +118,27 @@ class MALASampler(EnergySampler):
         # Compute new_state_batch without tracking gradients
         x_hat_batch = x_batch - self.epsilon * grad_batch + torch.sqrt(2*self.epsilon) * z
 
-        return self._accept_reject(x_batch = x_batch, x_hat_batch= x_hat_batch)
+        return self._accept_reject(x_batch = x_batch, x_hat_batch = x_hat_batch)
     
 
+    #@check_nan
     def _accept_reject(self, x_batch: torch.tensor, x_hat_batch: torch.tensor):
-    
+        
         x_batch_energy = self.energy_model.energy(x_batch)
         x_hat_batch_energy = self.energy_model.energy(x_hat_batch)
 
         grad_x_batch = self.energy_model.energy_grad(x_batch)
         grad_x_hat_batch = self.energy_model.energy_grad(x_hat_batch)
 
-        log_x_proposal = tla.norm((x_batch - x_hat_batch + self.epsilon * grad_x_hat_batch))**2
-        log_x_hat_proposal = tla.norm((x_hat_batch - x_batch + self.epsilon * grad_x_batch))**2
-        log_proposal = -(log_x_proposal - log_x_hat_proposal) / (4*self.epsilon)
+        log_x_proposal = tla.norm((x_batch - x_hat_batch + self.epsilon * grad_x_hat_batch), dim=1) ** 2
+        log_x_hat_proposal = tla.norm((x_hat_batch - x_batch + self.epsilon * grad_x_batch), dim=1) ** 2
+        log_proposal = - (log_x_proposal - log_x_hat_proposal) / (4*self.epsilon)
 
         alpha = torch.exp(x_batch_energy - x_hat_batch_energy + log_proposal)
 
         u_batch = torch.rand(alpha.shape)
-        accept_mask = u_batch <= alpha
-        
+        accept_mask = (u_batch <= alpha)
+
         new_state_batch = torch.where(accept_mask.unsqueeze(1), x_hat_batch, x_batch)
         return new_state_batch
                 
@@ -227,13 +230,13 @@ if __name__=="__main__":
          [2, 1],],
         dtype=torch.float32,
     )
-    x_0_batch = torch.tensor([0, 0], dtype = torch.float32)
+    #x_0_batch = torch.tensor([0, 0], dtype = torch.float32)
 
     ### Instantiate Sampler with initial Parameters ###
     epsilon = torch.tensor(0.5, dtype = torch.float32)
     #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
     num = torch.tensor(16, dtype = torch.float32)
     

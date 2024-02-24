@@ -21,6 +21,44 @@ def no_grad_decorator(func):
         return result
     return wrapper
 
+
+
+"""
+check_nan Decorator
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def check_nan(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if torch.isnan(result).any():
+            print(f"NaN detected in result of {func.__name__}")
+            print(*args)
+        return result
+    return wrapper
+
+
+"""
+Input - Output Decorator
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def in_out_logger(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        print(f'Inputs {func.__name__}:')
+        for arg in args[1:]:
+            print(arg[-10:])
+
+        result = func(*args, **kwargs)
+
+        print(f'Output {func.__name__}:')
+        print(result[-10:])
+
+        return result
+    
+    return wrapper
+
 """
 Helper functions
 -------------------------------------------------------------------------------------------------------------------------------------------

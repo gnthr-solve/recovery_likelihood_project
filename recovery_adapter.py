@@ -2,6 +2,7 @@
 import torch
 
 from ebm import EnergyModel
+from helper_tools import check_nan
 
 
 
@@ -20,7 +21,8 @@ class RecoveryAdapter(EnergyModel):
         self.energy_model = energy_model
         self.params = energy_model.params
 
-        
+
+    #@check_nan
     def energy(self, x: torch.tensor):
 
         energy = self.energy_model.energy(x)
@@ -30,13 +32,14 @@ class RecoveryAdapter(EnergyModel):
         return energy + conditional_term
 
 
+    #@check_nan
     def energy_grad(self, x: torch.tensor):
         
         grad = self.energy_model.energy_grad(x)
         
         conditional_grad = (self.perturbed_samples - x) / self.sigma**2
         
-        return grad + conditional_grad
+        return grad - conditional_grad
 
 
     def avg_param_grad(self, x: torch.tensor):

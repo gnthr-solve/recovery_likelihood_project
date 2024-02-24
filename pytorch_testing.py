@@ -254,8 +254,13 @@ def torch_where_test():
          [2, 1, 1],],
         dtype=torch.float32,
     )
-    
+
+    squared_norms_by_sum = torch.sum((x_batch)**2, dim=1)
+    print(squared_norms_by_sum)
+
     squared_norms = tla.norm(x_batch, dim=1) ** 2
+    print(squared_norms)
+
     squared_norms_unsqueezed = squared_norms.unsqueeze(1)
     print(squared_norms_unsqueezed)
     
