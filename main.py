@@ -63,7 +63,7 @@ def gaussian_test_ML():
 
     
     ### Instantiate Sampler with initial Parameters ###
-    x_0_batch = torch.zeros(size = (50,2))
+    x_0_batch = torch.zeros(size = (200,2))
 
     epsilon = torch.tensor(0.5, dtype = torch.float32)
     #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
@@ -92,11 +92,12 @@ def gaussian_test_ML():
             
             
             model_samples = likelihood.gen_model_samples(
-                batch_size = 2*batch_size,
-                burnin_offset = int(batch_size/2),
+                batch_size = batch_size,
+                burnin_offset = 2*batch_size,
             )
             #print(model_samples[:10])
             #print(X_batch[:10])
+            
             '''
             model_mv_normal = MultivariateNormal(
                 loc = model.params['mu'], 
@@ -105,7 +106,7 @@ def gaussian_test_ML():
             model_samples = model_mv_normal.sample(sample_shape= (2*batch_size, ))
             '''
 
-            likelihood.gradient(data_samples = X_batch, model_samples = model_samples[batch_size:])
+            likelihood.gradient(data_samples = X_batch, model_samples = model_samples)
             
             # perform gradient descent step along model.theta.grad
             optimizer.step()
@@ -174,9 +175,9 @@ def gaussian_test_RL():
     x_0_batch = torch.zeros(size = (batch_size, 2))
 
     epsilon = torch.tensor(0.5, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
     #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
 
     ### Instantiate Standard Likelihood ###
@@ -201,7 +202,7 @@ def gaussian_test_RL():
             
             model_samples = likelihood.gen_model_samples(
                 data_samples = X_batch,
-                burnin_offset = int(batch_size/2),
+                burnin_offset = int(batch_size/4),
             )
             #print(model_samples[:10])
             #print(X_batch[:10])
@@ -233,7 +234,7 @@ def gaussian_test_RL():
 if __name__=="__main__":
 
     #main()
-    #gaussian_test_ML()
-    gaussian_test_RL()
+    gaussian_test_ML()
+    #gaussian_test_RL()
 
     

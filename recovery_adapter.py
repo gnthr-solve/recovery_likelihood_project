@@ -22,7 +22,6 @@ class RecoveryAdapter(EnergyModel):
         self.params = energy_model.params
 
 
-    #@check_nan
     def energy(self, x: torch.tensor):
 
         energy = self.energy_model.energy(x)
@@ -32,7 +31,6 @@ class RecoveryAdapter(EnergyModel):
         return energy + conditional_term
 
 
-    #@check_nan
     def energy_grad(self, x: torch.tensor):
         
         grad = self.energy_model.energy_grad(x)
