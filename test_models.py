@@ -40,7 +40,7 @@ class MultivariateGaussianModel(EnergyModel):
 
 
     #@check_nan
-    def energy(self, x):
+    def energy(self, x: torch.tensor):
 
         energy = -torch.log(self.kernel(x))
         #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
@@ -48,7 +48,7 @@ class MultivariateGaussianModel(EnergyModel):
         return energy
     
 
-    def energy_grad(self, x):
+    def energy_grad(self, x: torch.tensor):
 
         mu = self.params['mu']  # Shape (1, d)
         Sigma_inv = self.Sigma_inv()

@@ -10,6 +10,7 @@ from typing import Any
 
 
 class EnergyModel(nn.Module):
+
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.params = nn.ParameterDict()
@@ -47,7 +48,9 @@ class EnergyModel(nn.Module):
         Gradient of energy w.r.t. parameters at x for training
         Default implementation for complex energy functions without analytical gradients
 
-        !!!This implementation aggregates the parameter gradients of a batch by summing them up!!!
+        ATTENTION: 
+        This implementation aggregates the parameter gradients of a batch by summing them up.
+        I.e. the Monte Carlo estimate is already computed in this method, which may be counterintuitive.
         """
         
         #Unsqueeze for if just one datapoint is passed

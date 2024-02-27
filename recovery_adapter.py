@@ -7,8 +7,13 @@ from helper_tools import check_nan
 
 
 """
-Recovery Adapter Approach
+Recovery Adapter
 -------------------------------------------------------------------------------------------------------------------------------------------
+Following the Object Adapter design pattern.
+The adapter inherits from EnergyModel and wraps an existing EnergyModel instance.
+Calls to the EnergyModel methods are delegated to the wrapped instance and extended with the conditional terms.
+Keeps a reference to the wrapped instance params attribute so that the parameters of this are updated correctly.
+Thus, after training, one can simply use the (trained) original model instance.
 """
 
 class RecoveryAdapter(EnergyModel):
@@ -44,7 +49,7 @@ class RecoveryAdapter(EnergyModel):
         return self.energy_model.avg_param_grad(x)
 
 
-    def set_perturbed_samples(self, perturbed_samples):
+    def set_perturbed_samples(self, perturbed_samples: torch.tensor):
         self.perturbed_samples = perturbed_samples
 
 

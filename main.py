@@ -65,10 +65,10 @@ def gaussian_test_ML():
     ### Instantiate Sampler with initial Parameters ###
     x_0_batch = torch.zeros(size = (200,2))
 
-    epsilon = torch.tensor(0.5, dtype = torch.float32)
-    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    epsilon = torch.tensor(1e-3, dtype = torch.float32)
+    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
     #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
 
     ### Instantiate Standard Likelihood ###
@@ -174,10 +174,10 @@ def gaussian_test_RL():
     ### Instantiate Sampler with initial Parameters ###
     x_0_batch = torch.zeros(size = (batch_size, 2))
 
-    epsilon = torch.tensor(0.5, dtype = torch.float32)
-    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    epsilon = torch.tensor(1e-1, dtype = torch.float32)
+    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
     #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
 
     ### Instantiate Standard Likelihood ###
@@ -234,7 +234,7 @@ def gaussian_test_RL():
 if __name__=="__main__":
 
     #main()
-    gaussian_test_ML()
-    #gaussian_test_RL()
+    #gaussian_test_ML()
+    gaussian_test_RL()
 
     
