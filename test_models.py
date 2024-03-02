@@ -18,7 +18,7 @@ class MultivariateGaussianModel(EnergyModel):
         self.params['Sigma'] = Sigma_0
         self.Sigma_inv = (lambda : torch.inverse(self.params['Sigma']))
 
-    #@in_out_logger
+
     def kernel(self, x: torch.tensor):
 
         # x can be of shape (d,) or (n, d)
@@ -39,7 +39,6 @@ class MultivariateGaussianModel(EnergyModel):
         return kernel_value
 
 
-    #@check_nan
     def energy(self, x: torch.tensor):
 
         energy = -torch.log(self.kernel(x))
@@ -56,6 +55,7 @@ class MultivariateGaussianModel(EnergyModel):
         grad = tla.multi_dot([(x - mu), Sigma_inv])
 
         return grad
+
 
 
 """
@@ -154,6 +154,9 @@ def mvGaussian_test():
     #print("Model execution result: \n", model.energy(x))
     print("Model grad w.r.t. input: \n", model.energy_grad(x))
     print("Model mean parameter grad: \n", model.avg_param_grad(x))
+
+
+
 
 
 

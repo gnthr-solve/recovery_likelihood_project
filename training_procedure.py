@@ -3,63 +3,15 @@ import torch
 
 from torch.distributions import MultivariateNormal
 from torch.utils.data import Dataset, DataLoader, random_split
-from torch.optim import Adam, Optimizer
-from torch.optim.lr_scheduler import ExponentialLR
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import LRScheduler
 from tqdm import trange, tqdm
 
 from ebm import EnergyModel
 from test_models import MultivariateGaussianModel
-from mc_samplers import ULASampler, MALASampler, HMCSampler
 from likelihood import Likelihood
 
-
-"""
-Trainer Blueprint
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-class Trainer:
-
-    def __init__(self, train_dataset, model, likelihood, optimizer):
-        self.train_dataset = train_dataset
-        self.model = model
-        self.likelihood = likelihood
-        self.optimizer = optimizer
-
-
-    def train(self, epochs, batch_size):
-        model = self.model
-        optimizer = self.optimizer
-        likelihood = self.likelihood
-
-        train_loader = DataLoader(self.train_dataset, batch_size = batch_size, shuffle=True)
-
-        scheduler = ExponentialLR(optimizer, gamma=0.9)
-
-        pbar = tqdm(range(epochs))
-        for it in pbar:
-            for b, X_batch in enumerate(train_loader):
-                
-                # reset gradients 
-                optimizer.zero_grad()
-                
-                model_samples = likelihood.gen_model_samples(
-                    x_0 = x_0,
-                    batch_size = 10*batch_size,
-                )
-                x_0 = model_samples[-1]
-                #print(x_0)
-
-                likelihood.gradient(data_samples = X_batch, model_samples = model_samples[batch_size:])
-                
-                print(f"{it}_{b+1}/{epochs} Parameters:")
-                for param_name, value in model.params.items():
-                    print(f'{param_name}:\n {value.data}')
-                
-                # perform gradient descent step along model.theta.grad
-                optimizer.step()
-            
-            scheduler.step()
+from training_observer import Subject
 
 
 
@@ -67,19 +19,29 @@ class Trainer:
 TrainingProcedure Blueprint
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-class TrainingProcedure:
+class TrainingProcedure(Subject):
 
-    def __init__(self, train_loader: DataLoader, model: EnergyModel, likelihood: Likelihood, optimizer: Optimizer):
+    def __init__(
+            self, 
+            train_loader: DataLoader, 
+            model: EnergyModel, 
+            likelihood: Likelihood, 
+            optimizer: Optimizer,
+            scheduler: LRScheduler,
+        ):
+
+        super().__init__()
+
         self.train_loader = train_loader
         self.model = model
         self.likelihood = likelihood
         self.optimizer = optimizer
+        self.scheduler = scheduler
 
 
     def __call__(self, epochs: int, model_batch_size: int, burnin_offset: int):
         
         self.epochs = epochs
-        scheduler = ExponentialLR(self.optimizer, gamma=0.9)
 
         epoch_progress_bar = tqdm(range(epochs))
 
@@ -87,7 +49,7 @@ class TrainingProcedure:
 
             self.training_epoch(curr_epoch = epoch, model_batch_size = model_batch_size, burnin_offset = burnin_offset)
 
-            scheduler.step()
+            self.scheduler.step()
 
 
     def training_loop(self, X_batch: torch.tensor, model_batch_size: int, burnin_offset: int):
@@ -125,10 +87,14 @@ class TrainingProcedure:
 
 if __name__=="__main__":
 
+    from torch.optim import Adam
+    from torch.optim.lr_scheduler import ExponentialLR
+
     from test_models import MultivariateGaussianModel
     from mc_samplers import ULASampler, MALASampler, HMCSampler
     from recovery_adapter import RecoveryAdapter
     from likelihood import RecoveryLikelihood
+    from timing_decorators import timing_decorator
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -179,12 +145,16 @@ if __name__=="__main__":
     train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle=True)
 
     optimizer = Adam(model.parameters(), lr=1e-1)
+    scheduler = ExponentialLR(optimizer, gamma=0.9)
 
     training_procedure = TrainingProcedure(
         train_loader = train_loader, 
         model = model, 
         likelihood = likelihood,
-        optimizer = optimizer
+        optimizer = optimizer,
+        scheduler = scheduler,
     )
 
     training_procedure(epochs = 10, model_batch_size = batch_size, burnin_offset = int(batch_size/4))
+
+    print(timing_decorator.return_average_times())

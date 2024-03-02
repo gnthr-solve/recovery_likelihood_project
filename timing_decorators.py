@@ -1,116 +1,74 @@
 
+
 import time
+import numpy as np
+
 from functools import wraps
-import statistics
 
 
 """
-BaseTimingDecorator
--------------------------------------------------------------------------------------------------------------------------------------------
+Timing Info Descriptor
+-----------------------------------------------------------------------------------------------------------------------------------------------
 """
+class MethodTimingDescriptor:
 
-class BaseTimingDecorator:
-    def __init__(self):
-        self.start_time = None
-        self.end_time = None
-        self.elapsed_time = 0
+    def __init__(self, func):
+        self.func = func
+        self.execution_times = []
 
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            self.start_time = time.time()
-            result = func(*args, **kwargs)
-            self.end_time = time.time()
-            self.elapsed_time += self.end_time - self.start_time
-            return result
-        return wrapper
-
-    def get_elapsed_time(self):
-        return self.elapsed_time
-
-
-
-
-"""
-ProgramTimingDecorator
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-class ProgramTimingDecorator(BaseTimingDecorator):
-    def __init__(self):
-        super().__init__()
-        self.method_times = {}
-
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            method_start_time = time.time()
-            result = func(*args, **kwargs)
-            method_end_time = time.time()
-            method_elapsed = method_end_time - method_start_time
-            self.method_times[func.__name__] = self.method_times.get(func.__name__, 0) + method_elapsed
-            self.elapsed_time += method_elapsed
-            return result
-        return wrapper
-
-    def get_method_times(self):
-        return self.method_times
-
-
-"""
-IterativeStepTimingDecorator
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-class IterativeStepTimingDecorator(BaseTimingDecorator):
-    def __init__(self):
-        super().__init__()
-        self.iteration_times = []
-
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            iteration_start_time = time.time()
-            result = func(*args, **kwargs)
-            iteration_end_time = time.time()
-            iteration_elapsed = iteration_end_time - iteration_start_time
-            self.iteration_times.append(iteration_elapsed)
-            return result
-        return wrapper
-
-    def get_iteration_statistics(self):
-        return {
-            'mean': statistics.mean(self.iteration_times),
-            'median': statistics.median(self.iteration_times),
-            'std_dev': statistics.stdev(self.iteration_times),
-            'total_iterations': len(self.iteration_times),
-        }
-    
-
-
-
-"""
-Descriptor-Decorator Timing
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-class LogAccess:
-    def __init__(self, method):
-        self.method = method
 
     def __get__(self, instance, owner):
-        
-        if instance is None:
-            return self
-        
+
+        self.class_name = owner.__name__
+
         def wrapper(*args, **kwargs):
-            print(f"Accessing method {self.method.__name__}")
-            return self.method(instance, *args, **kwargs)
+
+            start_time = time.time()
+            
+            result = self.func(instance, *args, **kwargs)
+            
+            end_time = time.time()
+            exec_time = end_time - start_time
+            
+            self.execution_times.append(exec_time)
+            
+            return result
         
         return wrapper
 
-class MyClass:
-    @LogAccess
-    def my_method(self):
-        print("Doing something important.")
 
-instance = MyClass()
-instance.my_method()
+"""
+Timing Info Descriptor-Decorator
+-----------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class TimingDecorator:
+
+    def __init__(self):
+        self._timed_methods = {}
+
+
+    def __call__(self, func):
+
+        descriptor = MethodTimingDescriptor(func)
+
+        self._timed_methods[id(descriptor)] = descriptor
+        
+        return descriptor
+
+
+    def return_average_times(self):
+
+        avg_exec_times = {
+            f'{descriptor.class_name}.{descriptor.func.__name__}': np.mean(descriptor.execution_times)
+            for descriptor in self._timed_methods.values()
+            if descriptor.execution_times != []
+        }
+
+        return avg_exec_times
+
+
+# Instantiate the decorator
+timing_decorator = TimingDecorator()
+
+
+

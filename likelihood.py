@@ -30,7 +30,7 @@ class Likelihood:
 
         for name, param in self.energy_model.params.items():
             param.grad = grads_data_component[name] - grads_model_component[name]
-            print(f'{name} LL grad: \n', param.grad)
+            #print(f'{name} LL grad: \n', param.grad)
 
 
     def gen_model_samples(self, batch_size: int, burnin_offset: int, **kwargs):
@@ -66,7 +66,7 @@ class RecoveryLikelihood(Likelihood):
 
         for name, param in self.adapted_model.params.items():
             param.grad = grads_data_component[name] - grads_model_component[name]
-            print(f'{name} RL grad: \n', param.grad)
+            #print(f'{name} RL grad: \n', param.grad)
         
 
     def gen_model_samples(self, data_samples: torch.tensor, burnin_offset: int, **kwargs):

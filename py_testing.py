@@ -1,8 +1,9 @@
 import numpy as np
 import scipy.stats as st
 import re
-import torch_distributions
+import torch
 
+from dataclasses import dataclass, field
 from itertools import product
 
 """
@@ -40,10 +41,48 @@ def copy_reference_test():
 
 
 
+"""
+Test
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+def dataclasses_test():
+
+    @dataclass(slots=True)
+    class Parameters:
+
+        name: str
+        purpose: str
+        param_list: list = field(default_factory = list)
+        x: torch.tensor = torch.tensor(2, dtype = torch.float32)
+
+    
+    init_name = 'test_name'
+    init_purpose = 'testing'
+    init_param_list = [1]
+    init_x = torch.tensor(1, dtype = torch.float32)
+
+    params = Parameters(
+        init_name, 
+        init_purpose, 
+        init_param_list, 
+        init_x
+    )
+
+    print('Parameters after init:', params)
+    
+    params.name = 'new_test_name'
+    params.param_list.append(2)
+    
+    print('Parameters after modification attempt:', params)
+
+
+
 
 
 
 
 if __name__=="__main__":
 
-    copy_reference_test()
+    #copy_reference_test()
+    dataclasses_test()

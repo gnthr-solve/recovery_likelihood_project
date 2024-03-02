@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 
 from ebm import EnergyModel
 from gaussian_iter_strategies import IterStrategy, StdIterStrategy, MomentumIterStrategy
-from helper_tools import no_grad_decorator, quadratic_form_batch, check_nan
+from helper_tools import no_grad_decorator, quadratic_form_batch
+from timing_decorators import timing_decorator
 
 
 """
@@ -77,6 +78,7 @@ class ULASampler(EnergySampler):
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
+    @timing_decorator
     def _iterate(self, x_batch: torch.tensor):
         
         # Compute the gradient of the energy function at x_batch
@@ -107,6 +109,7 @@ class MALASampler(EnergySampler):
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
+    @timing_decorator
     def _iterate(self, x_batch: torch.tensor):
         
         # Compute the gradient of the energy function at x
@@ -121,7 +124,7 @@ class MALASampler(EnergySampler):
         return self._accept_reject(x_batch = x_batch, x_hat_batch = x_hat_batch)
     
 
-    #@check_nan
+    @timing_decorator
     def _accept_reject(self, x_batch: torch.tensor, x_hat_batch: torch.tensor):
         
         x_batch_energy = self.energy_model.energy(x_batch)
@@ -159,6 +162,7 @@ class HMCSampler(EnergySampler):
         self.z_iterator = MomentumIterStrategy(self.data_dim, M, self.chain_num)
 
 
+    @timing_decorator
     def _iterate(self, x_batch: torch.tensor):
         
         p_batch = next(self.z_iterator)
@@ -189,6 +193,7 @@ class HMCSampler(EnergySampler):
         return self._accept_reject(x_batch = x_batch, p_batch = p_batch, x_hat_batch = x_hat_batch, p_hat_batch = p_hat_batch)
 
 
+    @timing_decorator
     def _accept_reject(self, x_batch, p_batch, x_hat_batch, p_hat_batch):
 
         U_batch = self.energy_model.energy(x_batch)
