@@ -75,9 +75,9 @@ class TrainingProcedure(Subject):
             
             self.training_loop(X_batch = X_batch, model_batch_size = model_batch_size, burnin_offset = burnin_offset)
 
-            print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
-            for param_name, value in self.model.params.items():
-                print(f'{param_name}:\n {value.data}')
+            #print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
+            #for param_name, value in self.model.params.items():
+            #    print(f'{param_name}:\n {value.data}')
 
 
 
@@ -106,7 +106,7 @@ if __name__=="__main__":
         loc = torch.tensor([3, 3], dtype = torch.float32), 
         covariance_matrix = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32)),
     )
-    dataset = data_mv_normal.sample_n(n = 10000)
+    dataset = data_mv_normal.sample(sample_shape = (10000,))
     # Define the sizes of your training and validation sets
     train_size = int(0.9 * len(dataset))
     val_size = len(dataset) - train_size
@@ -132,8 +132,8 @@ if __name__=="__main__":
     x_0_batch = torch.zeros(size = (batch_size, 2))
 
     epsilon = torch.tensor(1e-1, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
+    sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
     #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
 
 

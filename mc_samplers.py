@@ -124,7 +124,7 @@ class MALASampler(EnergySampler):
         return self._accept_reject(x_batch = x_batch, x_hat_batch = x_hat_batch)
     
 
-    @timing_decorator
+    #@timing_decorator
     def _accept_reject(self, x_batch: torch.tensor, x_hat_batch: torch.tensor):
         
         x_batch_energy = self.energy_model.energy(x_batch)
@@ -193,7 +193,7 @@ class HMCSampler(EnergySampler):
         return self._accept_reject(x_batch = x_batch, p_batch = p_batch, x_hat_batch = x_hat_batch, p_hat_batch = p_hat_batch)
 
 
-    @timing_decorator
+    #@timing_decorator
     def _accept_reject(self, x_batch, p_batch, x_hat_batch, p_hat_batch):
 
         U_batch = self.energy_model.energy(x_batch)
