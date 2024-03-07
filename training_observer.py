@@ -52,7 +52,7 @@ class TrainingObserver(Observer):
         self.iteration_times = []
         
         self.param_values = {
-            name: param.cpu().detach().numpy()
+            name: [param.cpu().detach().numpy()]
             for name, param in start_params
         }
 

@@ -269,6 +269,27 @@ def torch_where_test():
 
 
 
+def p_norm_test():
+
+    #, dim=1
+    matrix = torch.tensor(
+        [[2, 3, 4],
+         [1, 9, 7],
+         [0, 8, 3],
+         [2, 1, 1],],
+        dtype=torch.float32,
+    )
+    
+    p = 2
+
+    p_norm_by_sum = torch.sum(matrix ** p)
+    print(p_norm_by_sum)
+    #int or float order not supported for matrices
+    p_norm = tla.norm(matrix.flatten(), ord = p)**2
+    print(p_norm)
+    frobenius_norm = tla.norm(matrix, ord = 'fro')**2
+    print(frobenius_norm)
+
 
 
 
@@ -281,4 +302,5 @@ if __name__=="__main__":
     #slicing_assignment_test()
     #operations_broadcasting_test()
     #squared_norm_test()
-    torch_where_test()
+    #torch_where_test()
+    p_norm_test()

@@ -105,8 +105,8 @@ class TimingDecorator:
 
     def __call__(self, func):
 
-        #descriptor = MethodTimingDescriptor(func)
-        descriptor = TorchMethodTimingDescriptor(func)
+        descriptor = MethodTimingDescriptor(func)
+        #descriptor = TorchMethodTimingDescriptor(func)
 
         self._timed_methods[id(descriptor)] = descriptor
         
