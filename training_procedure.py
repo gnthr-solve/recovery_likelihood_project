@@ -22,21 +22,27 @@ TrainingProcedure Blueprint
 class TrainingProcedure(Subject):
 
     def __init__(
-            self, 
-            train_loader: DataLoader, 
+            self,
+            dataset: torch.tensor,
             model: EnergyModel, 
             likelihood: Likelihood, 
             optimizer: Optimizer,
             scheduler: LRScheduler,
+            batch_size: int,
+            model_batch_size: int = None,
         ):
 
         super().__init__()
 
-        self.train_loader = train_loader
         self.model = model
         self.likelihood = likelihood
         self.optimizer = optimizer
         self.scheduler = scheduler
+
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.model_batch_size = model_batch_size if model_batch_size else batch_size
+        self.train_loader = DataLoader(dataset, batch_size = batch_size, shuffle=True)
 
 
     def __call__(self, epochs: int, model_batch_size: int, burnin_offset: int):
@@ -67,6 +73,7 @@ class TrainingProcedure(Subject):
         
         # perform gradient descent step along model.theta.grad
         self.optimizer.step()
+        self.notify_observers()
 
     
     def training_epoch(self, curr_epoch: int, model_batch_size: int, burnin_offset: int):
@@ -75,9 +82,10 @@ class TrainingProcedure(Subject):
             
             self.training_loop(X_batch = X_batch, model_batch_size = model_batch_size, burnin_offset = burnin_offset)
 
-            #print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
-            #for param_name, value in self.model.params.items():
-            #    print(f'{param_name}:\n {value.data}')
+            #self.
+            print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
+            for param_name, value in self.model.params.items():
+                print(f'{param_name}:\n {value.data}')
 
 
 
@@ -95,6 +103,7 @@ if __name__=="__main__":
     from recovery_adapter import RecoveryAdapter
     from likelihood import RecoveryLikelihood
     from timing_decorators import timing_decorator
+    from training_observer import TrainingObserver
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -107,12 +116,6 @@ if __name__=="__main__":
         covariance_matrix = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32)),
     )
     dataset = data_mv_normal.sample(sample_shape = (10000,))
-    # Define the sizes of your training and validation sets
-    train_size = int(0.9 * len(dataset))
-    val_size = len(dataset) - train_size
-
-    # Use random_split to create training and validation datasets
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
 
     ### Instantiate Model with initial Parameters ###
@@ -141,20 +144,21 @@ if __name__=="__main__":
     likelihood = RecoveryLikelihood(adapted_model = model, sampler = sampler)
 
     ### Training ###
-    
-    train_loader = DataLoader(train_dataset, batch_size = batch_size, shuffle=True)
 
     optimizer = Adam(model.parameters(), lr=1e-1)
     scheduler = ExponentialLR(optimizer, gamma=0.9)
 
     training_procedure = TrainingProcedure(
-        train_loader = train_loader, 
+        dataset = dataset,
         model = model, 
         likelihood = likelihood,
         optimizer = optimizer,
         scheduler = scheduler,
+        batch_size = batch_size,
+        model_batch_size = batch_size,
     )
-
-    training_procedure(epochs = 10, model_batch_size = batch_size, burnin_offset = int(batch_size/4))
+    #observer = TrainingObserver()
+    #training_procedure.register_observer()
+    training_procedure(epochs = 10, burnin_offset = int(batch_size/4))
 
     print(timing_decorator.return_average_times())

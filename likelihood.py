@@ -21,7 +21,16 @@ class Likelihood:
         
         self.energy_model = energy_model
         self.sampler = sampler
-        
+
+
+    def unnormalised_log_likelihood(self, data_samples: torch.tensor):
+
+        energy_values = self.energy_model(data_samples)
+
+        unnormalised_log_likelihood = torch.sum(energy_values)/ energy_values.shape[0]
+
+        return unnormalised_log_likelihood
+
 
     def gradient(self, data_samples: torch.tensor, model_samples: torch.tensor):
 
@@ -57,7 +66,16 @@ class RecoveryLikelihood(Likelihood):
 
         self.adapted_model = adapted_model
         self.sampler = sampler
-        
+    
+
+    def unnormalised_log_likelihood(self, data_samples: torch.tensor):
+
+        energy_values = -self.adapted_model(data_samples)
+
+        unnormalised_log_likelihood = torch.sum(energy_values)/ energy_values.shape[0]
+
+        return unnormalised_log_likelihood
+    
 
     def gradient(self, data_samples: torch.tensor, model_samples: torch.tensor):
 

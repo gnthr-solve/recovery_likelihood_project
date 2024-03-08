@@ -5,6 +5,17 @@ import torch.linalg as tla
 from ebm import EnergyModel
 from helper_tools import quadratic_form_batch, check_nan, in_out_logger
 
+"""
+Concrete Energy Models for Experiments.
+
+These are the concrete subclasses for the EnergyModel base class.
+They define the parameters to be trained in the __init__ and implement the energy method.
+In those cases where the gradient of the energy is analytically available, like in the MultivariateGaussianModel,
+the models can override the energy_grad method.
+Overriding the avg_param_grad method is also possible, but as this method normally computes the average gradients of a batch,
+
+"""
+
 
 """
 Multivariate Gaussian Model
@@ -103,6 +114,8 @@ class VisibleBoltzmann(EnergyModel):
         result = quadratic_form_batch(x, W)
 
         return -result/2
+
+
 
 
 """

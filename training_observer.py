@@ -1,9 +1,11 @@
 
 import torch
 import time
+import pandas as pd
 
 from abc import ABC, abstractmethod
 
+from recovery_adapter import RecoveryAdapter
 
 """
 Subject Role Interface
@@ -13,8 +15,8 @@ class Subject:
     def __init__(self):
         self.observers = []
 
-    def register_observer(self, observer):
-        self.observers.append(observer)
+    def register_observers(self, observers):
+        self.observers.extend(observers)
 
     def notify_observers(self):
         for observer in self.observers:
@@ -30,98 +32,126 @@ class Observer(ABC):
     def update(subject_instance, *args, **kwargs):
         pass
 
-
+    @abstractmethod
+    def return_observations(self):
+        pass
 
 """
 TrainingObserver Class Approach following Observer Pattern
 -------------------------------------------------------------------------------------------------------------------------------------------
-Make TrainingProcedure incorporate a Subject role and update the observer at every Training Loop completion.
-Benefits:
-    Modular
-    Can add more than one observer and vary observer and subject independently
-Downsides:
-    Requires altering TrainingProcedure class.
-    More Boilerplate.
-    Potentially larger overhead.
 """
-class TrainingObserver(Observer):
+class ParameterObserver(Observer):
 
-    def __init__(self, start_time, start_params):
+    def __init__(self):
 
-        self.prev_time = start_time
-        self.iteration_times = []
-        
-        self.param_values = {
-            name: [param.cpu().detach().numpy()]
-            for name, param in start_params
-        }
+        self.param_values = []
 
 
     def update(self, train_instance, *args, **kwargs):
         
-        curr_time = time.time()
-        self.iteration_times.append(curr_time - self.prev_time)
-        self.prev_time = curr_time
+        param_dict = {
+            name: param.cpu().detach().clone().numpy()
+            for name, param in train_instance.model.params.items()
+        }
 
-        for name, param in train_instance.model.params.items():
-            self.param_values[name].append(
-                param.cpu().detach().numpy()
-            )
+        self.param_values.append(param_dict)
+
+
+    def return_observations(self, as_df: bool = True):
+
+        if as_df:
+            return pd.DataFrame(self.param_values)
+        else:
+            return self.param_values
+
+
+
+class TimingObserver(Observer):
+
+    def __init__(self):
+
+        self.iteration_times = []
+
+
+    def update(self, train_instance, *args, **kwargs):
+        
+        self.iteration_times.append(time.time())
+
+
+    def return_observations(self, as_df: bool = True):
+
+        iteration_times = [
+            time_stamp - self.iteration_times[0]
+            for time_stamp in self.iteration_times
+        ]
+
+        if as_df:
+            return pd.DataFrame({'Iteration Timestamp': iteration_times})
+        else:
+            return iteration_times 
+
+
+
+class LikelihoodObserver(Observer):
+
+    def __init__(self):
+
+        self.likelihood_values = []
+
+
+    def update(self, train_instance, *args, **kwargs):
+
+        dataset = train_instance.dataset
+
+        if type(train_instance.model) == RecoveryAdapter:
+            train_instance.model.set_perturbed_samples(dataset)
+
+        likelihood_value = train_instance.likelihood.unnormalised_log_likelihood(dataset)
+
+        self.likelihood_values.append(
+            likelihood_value.cpu().detach()
+        )
+    
+
+    def return_observations(self, as_df: bool = True):
+        
+        likelihood_values = torch.atleast_1d(self.likelihood_values)
+        likelihood_values = torch.cat(likelihood_values).numpy()
+
+        if as_df:
+            return pd.DataFrame({'Likelihood Values': likelihood_values})
+        else:
+            return likelihood_values 
+
+
 
 
 
 """
 Descriptor-Decorator Approach
 -------------------------------------------------------------------------------------------------------------------------------------------
-Use a descriptor decorator to wrap the training loop method and track parameters and execution times like this.
-Benefits: 
-    No need to change TrainingProcedure class itself.
-    Decorator can be turned on and off or replaced easily
-    
-Problems: 
-    How to access these times, parameters afterwards?
-Potential Solutions: 
-    Have decorator take an observer?
-    Use closure mechanism to create the Descriptor before decorating with it.
-    Track epoch iterations and save parameters when all iterations complete
 """
-
-class TrainingLoopDecorator:
+class ObservationDescriptor:
 
     def __init__(self, method):
 
         self.method = method
 
-        self.iteration_times = []
-        self.model_params = []
 
-
-    def __get__(self, instance, owner):
+    def __get__(self, instance: Subject, owner):
         
-        self.prev_time = time.time()
-        # Append starting parameters, i.e. theta_0
-        self.model_params.append(
-                {
-                    name: param.cpu().detach().numpy()
-                    for name, param in instance.model.params.items()
-                }
-        )
+        if instance.observers != []:
         
-        def wrapper(*args, **kwargs):
+            def wrapper(*args, **kwargs):
 
-            self.method(instance, *args, **kwargs)
+                self.method(instance, *args, **kwargs)
 
-            self.model_params.append(
-                {
-                    name: param.cpu().detach().numpy()
-                    for name, param in instance.model.params.items()
-                }
-            )
+                instance.notify_observers()
 
-            curr_time = time.time()
-            self.iteration_times.append(curr_time - self.prev_time)
-            self.prev_time = curr_time
-
-            return None
+                return None
         
+        else:
+
+            wrapper = self.method
+            
         return wrapper

@@ -7,7 +7,16 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 
-
+"""
+Energy Model Base Class
+-------------------------------------------------------------------------------------------------------------------------------------------
+The base class for all test models that is meant to be subclassed.
+Child classes need only insert their parameters in the params dict in the __init__ method 
+and implement the energy functional. 
+Gradients with respect to the input or the parameters can then be calculated automatically using the inherited functions,
+or implemented directly if a gradient is known analytically to save computation resources.
+energy_grad is predominantly used in the sampling algorithms, while avg_param_grad computes the MC estimates for training.
+"""
 
 class EnergyModel(nn.Module):
 

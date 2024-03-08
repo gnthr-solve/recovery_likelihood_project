@@ -1,3 +1,4 @@
+
 import numpy as np
 import scipy.stats as st
 import re
@@ -5,6 +6,17 @@ import torch
 
 from dataclasses import dataclass, field
 from itertools import product
+
+
+"""
+Export Import of classes
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def class_name_test():
+    from ebm import EnergyModel
+    print(EnergyModel.__name__)
+
+
 
 """
 Test
@@ -85,4 +97,5 @@ def dataclasses_test():
 if __name__=="__main__":
 
     #copy_reference_test()
-    dataclasses_test()
+    #dataclasses_test()
+    class_name_test()
