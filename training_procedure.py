@@ -23,7 +23,7 @@ class TrainingProcedure(Subject):
 
     def __init__(
             self,
-            dataset: torch.tensor,
+            dataset: torch.Tensor,
             model: EnergyModel, 
             likelihood: Likelihood, 
             optimizer: Optimizer,
@@ -58,7 +58,7 @@ class TrainingProcedure(Subject):
             self.scheduler.step()
 
 
-    def training_loop(self, X_batch: torch.tensor, model_batch_size: int, burnin_offset: int):
+    def training_loop(self, X_batch: torch.Tensor, model_batch_size: int, burnin_offset: int):
 
         # reset gradients 
         self.optimizer.zero_grad()

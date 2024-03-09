@@ -20,7 +20,7 @@ class ResultExporter:
             # If the file exists, read it into a DataFrame
             self.results_df = pd.read_csv(self.export_path)
         else:
-            # If the file doesn't exist, create an empty DataFrame
+            # If the file doesn't exist, create an empty DataFrame with the identifier
             self.results_df = pd.DataFrame(columns = ['training_run_id'])
         
 
@@ -37,4 +37,4 @@ class ResultExporter:
         self.results_df = self.results_df.combine_first(new_results_df)
         self.results_df.reset_index(inplace = True)
 
-        self.results_df.to_csv(self.export_path)
+        self.results_df.to_csv(self.export_path, index = False)

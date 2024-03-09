@@ -4,7 +4,7 @@ import torch.linalg as tla
 
 
 
-def vector_p_norm(target_vector: torch.tensor, model_vector: torch.tensor, p):
+def vector_p_norm(target_vector: torch.Tensor, model_vector: torch.Tensor, p):
 
     difference_vector = target_vector - model_vector
 
@@ -12,7 +12,7 @@ def vector_p_norm(target_vector: torch.tensor, model_vector: torch.tensor, p):
 
 
 
-def frobenius_norm(target_matrix: torch.tensor, model_matrix: torch.tensor):
+def frobenius_norm(target_matrix: torch.Tensor, model_matrix: torch.Tensor):
 
     difference_matrix = target_matrix - model_matrix
 

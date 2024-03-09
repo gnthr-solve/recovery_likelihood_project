@@ -30,7 +30,7 @@ class MultivariateGaussianModel(EnergyModel):
         self.Sigma_inv = (lambda : torch.inverse(self.params['Sigma']))
 
 
-    def kernel(self, x: torch.tensor):
+    def kernel(self, x: torch.Tensor):
 
         # x can be of shape (d,) or (n, d)
         x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
@@ -50,7 +50,7 @@ class MultivariateGaussianModel(EnergyModel):
         return kernel_value
 
 
-    def energy(self, x: torch.tensor):
+    def energy(self, x: torch.Tensor):
 
         energy = -torch.log(self.kernel(x))
         #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
@@ -58,7 +58,7 @@ class MultivariateGaussianModel(EnergyModel):
         return energy
     
 
-    def energy_grad(self, x: torch.tensor):
+    def energy_grad(self, x: torch.Tensor):
 
         mu = self.params['mu']  # Shape (1, d)
         Sigma_inv = self.Sigma_inv()
@@ -75,13 +75,13 @@ Simple Linear Model
 """
 class SimpleLinear(EnergyModel):
 
-    def __init__(self, theta_0: torch.tensor, C_0: torch.tensor):
+    def __init__(self, theta_0: torch.Tensor, C_0: torch.Tensor):
         super().__init__()
         self.params['theta'] = theta_0
         self.params['C'] = C_0
 
     
-    def energy(self, x: torch.tensor):
+    def energy(self, x: torch.Tensor):
 
         theta = self.params['theta']
         C = self.params['C']
@@ -100,12 +100,12 @@ Simple Linear Model
 """
 class VisibleBoltzmann(EnergyModel):
 
-    def __init__(self, W_0: torch.tensor):
+    def __init__(self, W_0: torch.Tensor):
         super().__init__()
         self.params['W'] = W_0
 
     
-    def energy(self, x: torch.tensor):
+    def energy(self, x: torch.Tensor):
 
         W = self.params['W']
 

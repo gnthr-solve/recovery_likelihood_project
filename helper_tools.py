@@ -63,7 +63,7 @@ def in_out_logger(func):
 Helper functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-def quadratic_form_batch(x_batch: torch.tensor, matrix: torch.tensor):
+def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
     
     result = tla.vecdot(
         torch.matmul(x_batch, matrix),

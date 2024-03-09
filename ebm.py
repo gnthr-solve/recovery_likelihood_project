@@ -25,17 +25,17 @@ class EnergyModel(nn.Module):
         self.params = nn.ParameterDict()
 
 
-    def forward(self, x: torch.tensor):
+    def forward(self, x: torch.Tensor):
         # Compute the energy given input x
         energy = self.energy(x)
         return energy
 
 
-    def energy(self, x: torch.tensor):
+    def energy(self, x: torch.Tensor):
         pass
     
 
-    def energy_grad(self, x: torch.tensor):
+    def energy_grad(self, x: torch.Tensor):
         """
         Gradient of energy w.r.t. inputs at x for Langevin/HMC type sampling.
         Default implementation for complex energy functions without analytical gradients
@@ -52,7 +52,7 @@ class EnergyModel(nn.Module):
         return gradient
     
 
-    def avg_param_grad(self, x: torch.tensor):
+    def avg_param_grad(self, x: torch.Tensor):
         """
         Gradient of energy w.r.t. parameters at x for training
         Default implementation for complex energy functions without analytical gradients

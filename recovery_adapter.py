@@ -18,7 +18,7 @@ Thus, after training, one can simply use the (trained) original model instance.
 
 class RecoveryAdapter(EnergyModel):
 
-    def __init__(self, energy_model: EnergyModel, perturbation_var: torch.tensor):
+    def __init__(self, energy_model: EnergyModel, perturbation_var: torch.Tensor):
         super().__init__()
 
         self.sigma = perturbation_var
@@ -27,7 +27,7 @@ class RecoveryAdapter(EnergyModel):
         self.params = energy_model.params
 
 
-    def energy(self, x: torch.tensor):
+    def energy(self, x: torch.Tensor):
 
         energy = self.energy_model.energy(x)
         
@@ -36,7 +36,7 @@ class RecoveryAdapter(EnergyModel):
         return energy + conditional_term
 
 
-    def energy_grad(self, x: torch.tensor):
+    def energy_grad(self, x: torch.Tensor):
         
         grad = self.energy_model.energy_grad(x)
         
@@ -45,11 +45,11 @@ class RecoveryAdapter(EnergyModel):
         return grad - conditional_grad
 
 
-    def avg_param_grad(self, x: torch.tensor):
+    def avg_param_grad(self, x: torch.Tensor):
         return self.energy_model.avg_param_grad(x)
 
 
-    def set_perturbed_samples(self, perturbed_samples: torch.tensor):
+    def set_perturbed_samples(self, perturbed_samples: torch.Tensor):
         self.perturbed_samples = perturbed_samples
 
 

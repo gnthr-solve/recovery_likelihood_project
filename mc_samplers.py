@@ -20,7 +20,7 @@ Aspects TODO and to decide:
 """
 class EnergySampler(ABC):
 
-    def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
 
         self.epsilon = epsilon
         self.energy_model = energy_model
@@ -34,7 +34,7 @@ class EnergySampler(ABC):
 
 
     @abstractmethod
-    def _iterate(self, x_batch: torch.tensor):
+    def _iterate(self, x_batch: torch.Tensor):
         ### Hook Method ###
         pass
 
@@ -72,14 +72,14 @@ Unadjusted Langevin Algorithm
 
 class ULASampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
 
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.tensor):
+    def _iterate(self, x_batch: torch.Tensor):
         
         # Compute the gradient of the energy function at x_batch
         grad_batch = self.energy_model.energy_grad(x_batch)
@@ -103,14 +103,14 @@ Metropolis Adjusted Langevin Algorithm
 
 class MALASampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
 
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.tensor):
+    def _iterate(self, x_batch: torch.Tensor):
         
         # Compute the gradient of the energy function at x
         grad_batch = self.energy_model.energy_grad(x_batch)
@@ -125,7 +125,7 @@ class MALASampler(EnergySampler):
     
 
     #@timing_decorator
-    def _accept_reject(self, x_batch: torch.tensor, x_hat_batch: torch.tensor):
+    def _accept_reject(self, x_batch: torch.Tensor, x_hat_batch: torch.Tensor):
         
         x_batch_energy = self.energy_model.energy(x_batch)
         x_hat_batch_energy = self.energy_model.energy(x_hat_batch)
@@ -154,7 +154,7 @@ Hamiltonian Monte Carlo
 """
 class HMCSampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.tensor, L: int, M: torch.tensor, energy_model: EnergyModel, x_0_batch: torch.tensor, **kwargs):
+    def __init__(self, epsilon: torch.Tensor, L: int, M: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
         super().__init__(epsilon, energy_model, x_0_batch)
         self.L = L
         self.M = M
@@ -163,7 +163,7 @@ class HMCSampler(EnergySampler):
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.tensor):
+    def _iterate(self, x_batch: torch.Tensor):
         
         p_batch = next(self.z_iterator)
         x_hat_batch = x_batch
