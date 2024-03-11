@@ -1,8 +1,7 @@
 import torch
 import torch.linalg as tla
-import numpy as np
-import scipy.stats as st
 import re
+import importlib
 
 from itertools import product
 from functools import wraps
@@ -72,51 +71,65 @@ def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
     
     return result
 
-"""
-Helper Classes
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-class MultivariateNormalIterator:
-
-    def __init__(self, mu, Sigma, num_samples):
-
-        self.num_samples = num_samples
-
-        mv_normal = MultivariateNormal(loc = mu, covariance_matrix = Sigma)
-        self.samples = mv_normal.sample_n(n = num_samples)
-        #self.samples = np.random.multivariate_normal(mean = mu, cov = Sigma, size = num_samples)
-        
-        self.current_sample = 0
 
 
-    def __iter__(self):
-        
-        return self
+def retrieve_class(module_name, class_name):
+    return importlib.import_module(module_name).__dict__[class_name]
 
 
-    def __next__(self):
 
-        if self.current_sample < self.num_samples:
-
-            sample = self.samples[self.current_sample]
-            self.current_sample += 1
-            return sample
-        
+def param_dict_tolist(param_dict: dict):
+    output_dict = {}
+    for name, value in param_dict.items():
+        #print(name, type(value))
+        if isinstance(value, torch.Tensor):
+            output_dict[name] = value.tolist()
+        elif isinstance(value, dict):
+            output_dict[name] = param_dict_tolist(value)
         else:
+            output_dict[name] = value
+    
+    #print(output_dict)
+    return output_dict
 
-            raise StopIteration
+
+def param_dict_to_hydra(param_dict: dict):
+    output_dict = {}
+    for name, value in param_dict.items():
+        #print(name, type(value))
+        if isinstance(value, torch.Tensor):
+            output_dict[name] = {
+                '_target_': 'helper_tools.convert_to_tensor',
+                'data': value.tolist(),
+            }
+        elif isinstance(value, dict):
+            output_dict[name] = param_dict_to_hydra(value)
+        else:
+            output_dict[name] = value
+    
+    #print(output_dict)
+    return output_dict
+
+
+def convert_to_tensor(data):
+    return torch.tensor(data=data, dtype= torch.float32)
+
 
 
 
 if __name__ == "__main__":
-    # Example usage:
-    mean_vector = torch.tensor([0, 0], dtype = torch.float32)
-    covariance_matrix = torch.tensor([[1, 0.5], [0.5, 1]], dtype = torch.float32)
-    num_samples = 5
+    test_model_dict = {
+        'model_class': 'MultivariateGaussianModel',
+        'start_params': {
+            'mu_0': torch.tensor([2, 2], dtype = torch.float32),
+            'Sigma_0': torch.tensor(
+                [[2, 0],
+                 [0, 1],],
+                dtype=torch.float32,
+            )
+        }
+    }
 
-    mvn_iterator = MultivariateNormalIterator(mean_vector, covariance_matrix, num_samples)
-
-    for sample in mvn_iterator:
-        print(sample)
-
+    #print(param_dict_tolist(test_model_dict))
+    print(param_dict_to_hydra(test_model_dict))
 

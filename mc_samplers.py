@@ -20,16 +20,16 @@ Aspects TODO and to decide:
 """
 class EnergySampler(ABC):
 
-    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, start_batch: torch.Tensor, **kwargs):
 
         self.epsilon = epsilon
         self.energy_model = energy_model
 
-        shape = x_0_batch.shape
+        shape = start_batch.shape
         self.data_dim = shape[-1]
         self.chain_num = shape[0]
 
-        self.curr_state_batch = x_0_batch
+        self.curr_state_batch = start_batch
         self.z_iterator: IterStrategy
 
 
@@ -72,8 +72,8 @@ Unadjusted Langevin Algorithm
 
 class ULASampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
-        super().__init__(epsilon, energy_model, x_0_batch)
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, start_batch: torch.Tensor, **kwargs):
+        super().__init__(epsilon, energy_model, start_batch)
 
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
@@ -103,8 +103,8 @@ Metropolis Adjusted Langevin Algorithm
 
 class MALASampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
-        super().__init__(epsilon, energy_model, x_0_batch)
+    def __init__(self, epsilon: torch.Tensor, energy_model: EnergyModel, start_batch: torch.Tensor, **kwargs):
+        super().__init__(epsilon, energy_model, start_batch)
 
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
@@ -154,8 +154,8 @@ Hamiltonian Monte Carlo
 """
 class HMCSampler(EnergySampler):
 
-    def __init__(self, epsilon: torch.Tensor, L: int, M: torch.Tensor, energy_model: EnergyModel, x_0_batch: torch.Tensor, **kwargs):
-        super().__init__(epsilon, energy_model, x_0_batch)
+    def __init__(self, epsilon: torch.Tensor, L: int, M: torch.Tensor, energy_model: EnergyModel, start_batch: torch.Tensor, **kwargs):
+        super().__init__(epsilon, energy_model, start_batch)
         self.L = L
         self.M = M
 
@@ -228,20 +228,20 @@ if __name__=="__main__":
     )
     model = MultivariateGaussianModel(mu_0 = mu_0, Sigma_0 = Sigma_0)
 
-    x_0_batch = torch.tensor(
+    start_batch = torch.tensor(
         [[2, 3],
          [1, 0],
          [0, 0],
          [2, 1],],
         dtype=torch.float32,
     )
-    #x_0_batch = torch.tensor([0, 0], dtype = torch.float32)
+    #start_batch = torch.tensor([0, 0], dtype = torch.float32)
 
     ### Instantiate Sampler with initial Parameters ###
     epsilon = torch.tensor(0.5, dtype = torch.float32)
-    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
     num = torch.tensor(16, dtype = torch.float32)
     

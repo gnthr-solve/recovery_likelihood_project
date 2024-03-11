@@ -104,6 +104,7 @@ class LikelihoodObserver(Observer):
         dataset = train_instance.dataset
 
         if type(train_instance.model) == RecoveryAdapter:
+    
             train_instance.model.set_perturbed_samples(dataset)
 
         likelihood_value = train_instance.likelihood.unnormalised_log_likelihood(dataset)

@@ -3,19 +3,49 @@
 
 def main():
 
-    import numpy as np
     import torch
-    import torch.nn as nn
 
-    from torch.optim import Adam
-    from sklearn.model_selection import train_test_split
-    from tqdm import trange, tqdm
+    from torch.distributions import MultivariateNormal
+    from hydra import initialize, compose
+    from hydra.utils import instantiate
 
-    from test_models import MultivariateGaussianModel
+    from experiment import Experiment
+    from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
+    from exporter import ResultExporter
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("-device:", device)
+
+    ### Create Data ###
+    data_mv_normal = MultivariateNormal(
+        loc = torch.tensor([3, 3], dtype = torch.float32), 
+        covariance_matrix = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32)),
+    )
+    dataset = data_mv_normal.sample(sample_shape = (10000,))
+
+    initialize(config_path= '.')
+    cfg = compose(config_name="config.yaml")
+
+    experiment = Experiment(
+        dataset = dataset,
+        model_parameters = instantiate(cfg.ModelParameters),
+        sampling_parameters = instantiate(cfg.SamplingParameters),
+        likelihood_parameters = instantiate(cfg.LikelihoodParameters),
+        hyper_parameters = instantiate(cfg.HyperParameters),
+    )
+    #print(dict(experiment.hyper_parameters))
+
+    training_observers = [
+        TimingObserver(),
+        LikelihoodObserver(),
+        ParameterObserver(),
+    ]
+
+    experiment.build_components(observers = training_observers)
+
+    experiment.run(num_trials = 1)
+
 
     
 
@@ -233,8 +263,8 @@ def gaussian_test_RL():
 
 if __name__=="__main__":
 
-    #main()
+    main()
     #gaussian_test_ML()
-    gaussian_test_RL()
+    #gaussian_test_RL()
 
     

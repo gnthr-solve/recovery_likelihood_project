@@ -28,8 +28,11 @@ class TrainingProcedure(Subject):
             likelihood: Likelihood, 
             optimizer: Optimizer,
             scheduler: LRScheduler,
+            epochs: int,
             batch_size: int,
             model_batch_size: int = None,
+            burnin_offset: int = 0,
+            **kwargs
         ):
 
         super().__init__()
@@ -40,20 +43,20 @@ class TrainingProcedure(Subject):
         self.scheduler = scheduler
 
         self.dataset = dataset
+        self.epochs = epochs
         self.batch_size = batch_size
         self.model_batch_size = model_batch_size if model_batch_size else batch_size
+        self.burnin_offset = burnin_offset
         self.train_loader = DataLoader(dataset, batch_size = batch_size, shuffle=True)
 
 
-    def __call__(self, epochs: int, model_batch_size: int, burnin_offset: int):
-        
-        self.epochs = epochs
+    def __call__(self):
 
-        epoch_progress_bar = tqdm(range(epochs))
+        epoch_progress_bar = tqdm(range(self.epochs))
 
         for epoch in epoch_progress_bar:
 
-            self.training_epoch(curr_epoch = epoch, model_batch_size = model_batch_size, burnin_offset = burnin_offset)
+            self.training_epoch(curr_epoch = epoch, model_batch_size = self.model_batch_size, burnin_offset = self.burnin_offset)
 
             self.scheduler.step()
 
