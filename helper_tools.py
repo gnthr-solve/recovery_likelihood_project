@@ -1,5 +1,8 @@
+
 import torch
 import torch.linalg as tla
+import numpy as np
+import pandas as pd
 import re
 import importlib
 
@@ -38,28 +41,7 @@ def check_nan(func):
 
 
 """
-Input - Output Decorator
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-def in_out_logger(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-
-        print(f'Inputs {func.__name__}:')
-        for arg in args[1:]:
-            print(arg[-10:])
-
-        result = func(*args, **kwargs)
-
-        print(f'Output {func.__name__}:')
-        print(result[-10:])
-
-        return result
-    
-    return wrapper
-
-"""
-Helper functions
+Torch Functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
@@ -72,7 +54,14 @@ def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
     return result
 
 
+def non_batch_dims(tensor_batch: torch.Tensor):
+    return tuple(range(1, tensor_batch.dim()))
 
+
+"""
+Config Setup Functions
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
 def retrieve_class(module_name, class_name):
     return importlib.import_module(module_name).__dict__[class_name]
 
@@ -113,6 +102,25 @@ def param_dict_to_hydra(param_dict: dict):
 
 def convert_to_tensor(data):
     return torch.tensor(data=data, dtype= torch.float32)
+
+
+"""
+Pandas to torch
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def param_record_to_torch(param_column):
+    
+    func = lambda s: np.array(eval(s))
+
+    param_array_column = param_column.map(func)
+
+    params_array = np.stack(param_array_column, axis = 0)
+
+    params_tensor = torch.tensor(params_array, dtype= torch.float32)
+    
+    return params_tensor
+
+
 
 
 

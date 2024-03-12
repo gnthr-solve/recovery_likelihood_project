@@ -50,7 +50,7 @@ class ParameterObserver(Observer):
     def update(self, train_instance, *args, **kwargs):
         
         param_dict = {
-            name: param.cpu().detach().clone().numpy()
+            name: param.cpu().detach().clone().tolist()
             for name, param in train_instance.model.params.items()
         }
 
@@ -59,10 +59,14 @@ class ParameterObserver(Observer):
 
     def return_observations(self, as_df: bool = True):
 
+        param_values = self.param_values
+
+        #reset
+        self.param_values = []
         if as_df:
-            return pd.DataFrame(self.param_values)
+            return pd.DataFrame(param_values)
         else:
-            return self.param_values
+            return param_values
 
 
 
@@ -84,6 +88,9 @@ class TimingObserver(Observer):
             time_stamp - self.iteration_times[0]
             for time_stamp in self.iteration_times
         ]
+
+        #reset
+        self.iteration_times = []
 
         if as_df:
             return pd.DataFrame({'Iteration Timestamp': iteration_times})
@@ -118,6 +125,9 @@ class LikelihoodObserver(Observer):
         
         likelihood_values = torch.atleast_1d(self.likelihood_values)
         likelihood_values = torch.cat(likelihood_values).numpy()
+
+        #reset
+        self.likelihood_values = []
 
         if as_df:
             return pd.DataFrame({'Likelihood Values': likelihood_values})

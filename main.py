@@ -8,19 +8,22 @@ def main():
     from torch.distributions import MultivariateNormal
     from hydra import initialize, compose
     from hydra.utils import instantiate
-
+    from pathlib import Path
     from experiment import Experiment
     from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
-    from exporter import ResultExporter
+    from exporter import ResultManager
+    from metrics import batch_frobenius_norm, apply_param_metric_to_df, FrobeniusError, LpError
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("-device:", device)
 
+    target_mu = torch.tensor([3, 3], dtype = torch.float32)
+    target_Sigma = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32))
     ### Create Data ###
     data_mv_normal = MultivariateNormal(
-        loc = torch.tensor([3, 3], dtype = torch.float32), 
-        covariance_matrix = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32)),
+        loc = target_mu, 
+        covariance_matrix = target_Sigma,
     )
     dataset = data_mv_normal.sample(sample_shape = (10000,))
 
@@ -44,8 +47,33 @@ def main():
 
     experiment.build_components(observers = training_observers)
 
-    experiment.run(num_trials = 1)
+    exporter = ResultManager(
+        file_name = 'run_test.csv',
+        file_folder_path = Path('/Users/gnthr/Desktop/Studium/CMS/Research_Project/recovery_likelihood_project/Experiment_Results')
+    )
+    experiment.run(num_trials = 3, exporter = exporter)
 
+    exporter.load_results_df()
+    df = exporter.results_df.copy()
+    #print(df.info())
+
+    mu_update_df = apply_param_metric_to_df(
+        df,
+        target_mu,
+        'mu',
+        LpError(p = 2)
+    )
+    print(mu_update_df[:10])
+
+    Sigma_update_df = apply_param_metric_to_df(
+        df,
+        target_Sigma,
+        'Sigma',
+        FrobeniusError(),
+    )
+    
+    exporter.update_results(mu_update_df)
+    exporter.update_results(Sigma_update_df)
 
     
 

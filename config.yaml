@@ -55,7 +55,7 @@ SamplingParameters:
       - 1.0
 LikelihoodParameters:
   _target_: experiment_params.LikelihoodParameters
-  likelihood_class: RecoveryLikelihood
+  likelihood_class: Likelihood
   perturbation_var:
     _target_: helper_tools.convert_to_tensor
     data: 1.0

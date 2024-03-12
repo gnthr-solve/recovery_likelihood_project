@@ -25,7 +25,7 @@ class Likelihood:
 
     def unnormalised_log_likelihood(self, data_samples: torch.Tensor):
 
-        energy_values = self.energy_model(data_samples)
+        energy_values = -self.energy_model(data_samples)
 
         unnormalised_log_likelihood = torch.sum(energy_values)/ energy_values.shape[0]
 

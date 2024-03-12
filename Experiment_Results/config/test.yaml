@@ -1,5 +1,0 @@
-
-model:
-  _target_: test_models.MultivariateGaussianModel
-  mu_0: [2, 2]
-  Sigma_0: [[2, 0],[0, 1]]

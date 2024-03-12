@@ -159,9 +159,11 @@ if __name__=="__main__":
         scheduler = scheduler,
         batch_size = batch_size,
         model_batch_size = batch_size,
+        epochs = 10, 
+        burnin_offset = int(batch_size/4)
     )
     #observer = TrainingObserver()
     #training_procedure.register_observer()
-    training_procedure(epochs = 10, burnin_offset = int(batch_size/4))
+    training_procedure()
 
     print(timing_decorator.return_average_times())

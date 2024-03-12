@@ -103,9 +103,15 @@ class Experiment:
         self.training_procedure.register_observers(observers=observers)
 
 
-    def run(self, num_trials):
-
-        for _ in range(num_trials):
+    def run(self, num_trials, exporter):
+        
+        for i in range(num_trials):
 
             self.training_procedure()
 
+            observation_dfs = [
+                observer.return_observations()
+                for observer in self.training_procedure.observers
+            ]
+
+            exporter.export_observations(training_run_id = f'run_{i+1}', observation_dfs = observation_dfs)

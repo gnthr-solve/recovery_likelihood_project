@@ -3,7 +3,7 @@ import torch
 import torch.linalg as tla
 
 from ebm import EnergyModel
-from helper_tools import quadratic_form_batch, check_nan, in_out_logger
+from helper_tools import quadratic_form_batch, check_nan
 
 """
 Concrete Energy Models for Experiments.
