@@ -87,12 +87,12 @@ class RecoveryLikelihood(Likelihood):
             #print(f'{name} RL grad: \n', param.grad)
         
 
-    def gen_model_samples(self, data_samples: torch.Tensor, burnin_offset: int, **kwargs):
+    def gen_model_samples(self, data_samples: torch.Tensor, batch_size: int, burnin_offset: int, **kwargs):
 
         perturbed_data_samples = data_samples + self.adapted_model.sigma * torch.randn_like(data_samples)
         self.adapted_model.set_perturbed_samples(perturbed_samples = perturbed_data_samples)
 
-        num_samples = torch.tensor(perturbed_data_samples.shape[0], dtype = torch.float32)
+        num_samples = torch.tensor(batch_size, dtype = torch.float32)
         model_samples = self.sampler.sample(num_samples = num_samples, burnin_offset= burnin_offset)
         
         return model_samples

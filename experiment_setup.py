@@ -53,6 +53,14 @@ M = torch.eye(n = 2)
 """
 Parameters config
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Remark: 
+The model_batch_size parameter specifies how many samples should be generated 
+to estimate the expectation for the model component ( E[grad_theta f] ) of the likelihood gradient.
+While the number of samples for the data component is fixed with batch size we can adjust the precision of the model component, 
+by sampling a larger batch.
+ATTENTION: 
+For recovery likelihood the number of MC chains is fixed to the batch_size. 
+Thus the model_batch_size MUST be an integer multiple of the batch_size to avoid an error. 
 """
 experiment_likelihood_class = 'RecoveryLikelihood'
 
@@ -68,7 +76,7 @@ hyper_params = HyperParameters(
     },
     scheduler_class = 'ExponentialLR',
     scheduler_params = {
-        'gamma': 0.9
+        'gamma': 0.5
     },
 )
 

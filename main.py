@@ -10,7 +10,7 @@ def main():
     from pathlib import Path
     from experiment import Experiment
     from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
-    from exporter import ResultManager
+    from result_manager import ResultManager
     from metrics import batch_frobenius_norm, apply_param_metric_to_df, FrobeniusError, LpError
 
     # check computation backend to use
@@ -62,7 +62,7 @@ def main():
         file_name = result_name,
         file_folder_path = experiment_dir,
     )
-    experiment.run(num_trials = 2, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 5, exporter = exporter, observers = training_observers)
 
     exporter.load_results_df()
     df = exporter.results_df.copy()
