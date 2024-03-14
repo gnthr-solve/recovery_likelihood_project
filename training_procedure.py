@@ -86,9 +86,9 @@ class TrainingProcedure(Subject):
             self.training_loop(X_batch = X_batch, model_batch_size = model_batch_size, burnin_offset = burnin_offset)
 
             #self.
-            print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
-            for param_name, value in self.model.params.items():
-                print(f'{param_name}:\n {value.data}')
+            #print(f"{curr_epoch}_{batch_ind+1}/{self.epochs} Parameters:")
+            #for param_name, value in self.model.params.items():
+            #    print(f'{param_name}:\n {value.data}')
 
 
 

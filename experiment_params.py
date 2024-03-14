@@ -61,7 +61,7 @@ class SamplingParameters(Parameterset):
     __slots__ = (
         'sampler_class',
         'epsilon',
-        'start_batch',
+        #'start_batch',
         'L',
         'M',
     )
@@ -82,7 +82,10 @@ class ModelParameters(Parameterset):
 
     __slots__ = (
         'model_class',
+        'target_params',
         'start_params',
+        'requires_adapter',
+        'perturbation_var',
     )
 
     def __init__(self, **kwargs):
@@ -103,7 +106,8 @@ class HyperParameters(Parameterset):
         'batch_size',
         'epochs',
         'burnin_offset',
-        'model_batch_size', 
+        'model_batch_size',
+        'likelihood_class',
         'optimizer_class',
         'optimizer_params',
         'scheduler_class',
@@ -124,8 +128,7 @@ LikelihoodParameters
 class LikelihoodParameters(Parameterset):
 
     __slots__ = (
-        'likelihood_class',
-        'perturbation_var',
+        
     )
 
     def __init__(self, **kwargs):
@@ -144,7 +147,8 @@ if __name__ == "__main__":
         batch_size = 200,
         epochs = 10,
         burnin_offset = 50,
-        model_batch_size = 200, 
+        model_batch_size = 200,
+        likelihood_class = 'RecoveryLikelihood',
         optimizer_class = 'Adam',
         optimizer_params = {
             'lr': 1e-1,
@@ -157,7 +161,7 @@ if __name__ == "__main__":
 
     sampling_params = SamplingParameters(
         sampler_class = 'MALASampler',
-        start_batch = torch.zeros(size = (5, 2)),
+        #start_batch = torch.zeros(size = (5, 2)),
         epsilon = torch.tensor(1e-1, dtype = torch.float32),
         L = 3,
         M = torch.eye(n = 2),
@@ -172,19 +176,16 @@ if __name__ == "__main__":
                  [0, 1],],
                 dtype=torch.float32,
             )
-        }
+        },
+        requires_adapter = True,
+        perturbation_var = torch.tensor(1, dtype = torch.float32),
     )
 
-    likelihood_params = LikelihoodParameters(
-        likelihood_class = 'RecoveryLikelihood',
-        perturbation_var = torch.tensor(1, dtype = torch.float32)
-    )
 
     paramsets = [
         hyper_params, 
         model_params, 
         sampling_params, 
-        likelihood_params
     ]
 
     paramsets_config = [params.as_config() for params in paramsets]

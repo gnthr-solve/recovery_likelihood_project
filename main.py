@@ -5,7 +5,6 @@ def main():
 
     import torch
 
-    from torch.distributions import MultivariateNormal
     from hydra import initialize, compose
     from hydra.utils import instantiate
     from pathlib import Path
@@ -18,24 +17,36 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("-device:", device)
 
-    target_mu = torch.tensor([3, 3], dtype = torch.float32)
-    target_Sigma = 2* torch.diag(torch.ones(size = (2,), dtype=torch.float32))
-    ### Create Data ###
-    data_mv_normal = MultivariateNormal(
-        loc = target_mu, 
-        covariance_matrix = target_Sigma,
-    )
-    dataset = data_mv_normal.sample(sample_shape = (10000,))
+    ### Set Paths ###
+    result_directory = Path('./Experiment_Results')
+    experiment_name = 'MVG_RL_ML'
+    experiment_dir = result_directory / experiment_name
 
-    initialize(config_path= '.')
-    cfg = compose(config_name="config.yaml")
+    config_name = 'recovery_config.yaml'
+    dataset_name = 'dataset.pt'
+    start_batch_name = 'start_batch.pt'
+    result_name = 'recovery.csv'
 
+    print(experiment_dir)
+    ### Load from directory ###
+    dataset = torch.load(experiment_dir.joinpath(dataset_name))
+    start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
+
+    initialize(config_path= str(experiment_dir))
+    cfg = compose(config_name = config_name)
+
+
+    ### Experiment Setup ###
+    hyper_parameters = instantiate(cfg.HyperParameters)
+    model_parameters = instantiate(cfg.ModelParameters)
+    sampling_parameters = instantiate(cfg.SamplingParameters)
+    
     experiment = Experiment(
         dataset = dataset,
-        model_parameters = instantiate(cfg.ModelParameters),
-        sampling_parameters = instantiate(cfg.SamplingParameters),
-        likelihood_parameters = instantiate(cfg.LikelihoodParameters),
-        hyper_parameters = instantiate(cfg.HyperParameters),
+        sampler_start_batch = start_batch,
+        model_parameters = model_parameters,
+        sampling_parameters = sampling_parameters,
+        hyper_parameters = hyper_parameters,
     )
     #print(dict(experiment.hyper_parameters))
 
@@ -45,13 +56,13 @@ def main():
         ParameterObserver(),
     ]
 
-    experiment.build_components(observers = training_observers)
+    #experiment.build_components(observers = training_observers)
 
     exporter = ResultManager(
-        file_name = 'run_test.csv',
-        file_folder_path = Path('/Users/gnthr/Desktop/Studium/CMS/Research_Project/recovery_likelihood_project/Experiment_Results')
+        file_name = result_name,
+        file_folder_path = experiment_dir,
     )
-    experiment.run(num_trials = 3, exporter = exporter)
+    experiment.run(num_trials = 2, exporter = exporter, observers = training_observers)
 
     exporter.load_results_df()
     df = exporter.results_df.copy()
@@ -59,19 +70,19 @@ def main():
 
     mu_update_df = apply_param_metric_to_df(
         df,
-        target_mu,
+        model_parameters['target_params']['mu'],
         'mu',
         LpError(p = 2)
     )
-    print(mu_update_df[:10])
+    #print(mu_update_df[:10])
 
     Sigma_update_df = apply_param_metric_to_df(
         df,
-        target_Sigma,
+        model_parameters['target_params']['Sigma'],
         'Sigma',
         FrobeniusError(),
     )
-    
+
     exporter.update_results(mu_update_df)
     exporter.update_results(Sigma_update_df)
 
@@ -121,12 +132,12 @@ def gaussian_test_ML():
 
     
     ### Instantiate Sampler with initial Parameters ###
-    x_0_batch = torch.zeros(size = (200,2))
+    start_batch = torch.zeros(size = (200,2))
 
     epsilon = torch.tensor(1e-3, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
 
     ### Instantiate Standard Likelihood ###
@@ -179,6 +190,7 @@ def gaussian_test_ML():
         
         scheduler.step()
 
+    #print(mu_0, Sigma_0)
 
 
 
@@ -230,12 +242,12 @@ def gaussian_test_RL():
 
     batch_size = 200
     ### Instantiate Sampler with initial Parameters ###
-    x_0_batch = torch.zeros(size = (batch_size, 2))
+    start_batch = torch.zeros(size = (batch_size, 2))
 
     epsilon = torch.tensor(1e-1, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
 
     ### Instantiate Standard Likelihood ###

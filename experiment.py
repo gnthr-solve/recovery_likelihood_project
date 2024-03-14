@@ -7,7 +7,7 @@ from ebm import EnergyModel
 from mc_samplers import EnergySampler
 from recovery_adapter import RecoveryAdapter
 from likelihood import RecoveryLikelihood
-from experiment_params import ModelParameters, SamplingParameters, LikelihoodParameters, HyperParameters
+from experiment_params import ModelParameters, SamplingParameters, HyperParameters
 from helper_tools import retrieve_class
 from training_procedure import TrainingProcedure
 from training_observer import Observer
@@ -24,27 +24,28 @@ class ExperimentBuilder:
 
         start_params = model_parameters['start_params']
 
-        return model_type(**start_params)
+        model = model_type(**start_params)
+        if model_parameters['requires_adapter']:
 
-    
-    def setup_sampler(self, model: EnergyModel, sampling_parameters: SamplingParameters):
-
-        sampler_type = retrieve_class('mc_samplers', sampling_parameters['sampler_class'])
-        
-        return sampler_type(energy_model = model, **sampling_parameters)
-    
-
-    def setup_likelihood(self, model: EnergyModel, sampler: EnergySampler, likelihood_parameters: LikelihoodParameters):
-        
-        likelihood_type = retrieve_class('likelihood', likelihood_parameters['likelihood_class'])
-
-        if likelihood_type == RecoveryLikelihood:
-
-            perturbation_var = likelihood_parameters['perturbation_var']
+            perturbation_var = model_parameters['perturbation_var']
 
             model = RecoveryAdapter(energy_model = model, perturbation_var = perturbation_var)
 
-        return model, likelihood_type(model, sampler)
+        return model
+
+    
+    def setup_sampler(self, model: EnergyModel, start_batch: torch.Tensor, sampling_parameters: SamplingParameters):
+
+        sampler_type = retrieve_class('mc_samplers', sampling_parameters['sampler_class'])
+        
+        return sampler_type(energy_model = model, start_batch = start_batch, **sampling_parameters)
+    
+
+    def setup_likelihood(self, model: EnergyModel, sampler: EnergySampler, hyper_parameters: HyperParameters):
+        
+        likelihood_type = retrieve_class('likelihood', hyper_parameters['likelihood_class'])
+
+        return likelihood_type(model, sampler)
     
 
     def setup_train_components(self, model: EnergyModel, hyper_parameters: HyperParameters):
@@ -67,18 +68,18 @@ class Experiment:
     def __init__(
             self,
             dataset: torch.Tensor,
+            sampler_start_batch: torch.Tensor,
             model_parameters: ModelParameters,
             sampling_parameters: SamplingParameters,
-            likelihood_parameters: LikelihoodParameters,
             hyper_parameters: HyperParameters
         ):
 
         self.builder = ExperimentBuilder()
         self.dataset = dataset
+        self.sampler_start_batch = sampler_start_batch
         self.hyper_parameters = hyper_parameters
         self.model_parameters = model_parameters
         self.sampling_parameters = sampling_parameters
-        self.likelihood_parameters = likelihood_parameters
 
 
     def build_components(self, observers: list[Observer]):
@@ -86,8 +87,8 @@ class Experiment:
         builder = self.builder
 
         model = builder.setup_model(self.model_parameters)
-        sampler = builder.setup_sampler(model, self.sampling_parameters)
-        model, likelihood = builder.setup_likelihood(model, sampler, self.likelihood_parameters)
+        sampler = builder.setup_sampler(model, self.sampler_start_batch, self.sampling_parameters)
+        likelihood = builder.setup_likelihood(model, sampler, self.hyper_parameters)
 
         optimizer, scheduler = builder.setup_train_components(model, self.hyper_parameters)
 
@@ -103,10 +104,11 @@ class Experiment:
         self.training_procedure.register_observers(observers=observers)
 
 
-    def run(self, num_trials, exporter):
+    def run(self, num_trials, exporter, observers: list[Observer]):
         
         for i in range(num_trials):
 
+            self.build_components(observers = observers)
             self.training_procedure()
 
             observation_dfs = [

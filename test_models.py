@@ -23,10 +23,10 @@ Multivariate Gaussian Model
 """
 class MultivariateGaussianModel(EnergyModel):
 
-    def __init__(self, mu_0, Sigma_0):
+    def __init__(self, mu_0: torch.Tensor, Sigma_0: torch.Tensor):
         super().__init__()
-        self.params['mu'] = mu_0
-        self.params['Sigma'] = Sigma_0
+        self.params['mu'] = mu_0.clone()
+        self.params['Sigma'] = Sigma_0.clone()
         self.Sigma_inv = (lambda : torch.inverse(self.params['Sigma']))
 
 
@@ -77,8 +77,8 @@ class SimpleLinear(EnergyModel):
 
     def __init__(self, theta_0: torch.Tensor, C_0: torch.Tensor):
         super().__init__()
-        self.params['theta'] = theta_0
-        self.params['C'] = C_0
+        self.params['theta'] = theta_0.clone()
+        self.params['C'] = C_0.clone()
 
     
     def energy(self, x: torch.Tensor):
@@ -102,7 +102,7 @@ class VisibleBoltzmann(EnergyModel):
 
     def __init__(self, W_0: torch.Tensor):
         super().__init__()
-        self.params['W'] = W_0
+        self.params['W'] = W_0.clone()
 
     
     def energy(self, x: torch.Tensor):
