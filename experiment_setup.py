@@ -72,11 +72,11 @@ hyper_params = HyperParameters(
     likelihood_class = experiment_likelihood_class,
     optimizer_class = 'Adam',
     optimizer_params = {
-        'lr': 1e-1,
+        'lr': 1e-2,
     },
     scheduler_class = 'ExponentialLR',
     scheduler_params = {
-        'gamma': 0.5
+        'gamma': 0.9
     },
 )
 

@@ -81,6 +81,9 @@ class Experiment:
         self.model_parameters = model_parameters
         self.sampling_parameters = sampling_parameters
 
+        if hyper_parameters['likelihood_class'] == 'RecoveryLikelihood' and sampler_start_batch.shape[0] != hyper_parameters['batch_size']:
+            raise Exception("The batch dimension of the sampler starting batch must coincide with the batch size for RecoveryLikelihood.")
+
 
     def build_components(self, observers: list[Observer]):
 

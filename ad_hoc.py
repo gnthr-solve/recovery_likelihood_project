@@ -87,5 +87,15 @@ if __name__=="__main__":
     plot_index = 'Iteration Timestamp'
     column_to_plot = 'Likelihood Values'
 
-    plot_run_metric(results_df, plot_index, column_to_plot, save = True)
-    process_plot(df = results_df, column_to_plot = column_to_plot, save = True)
+    plot_run_metric(
+        results_df, 
+        plot_index, 
+        column_to_plot, 
+        #save = True
+    )
+
+    process_plot(
+        df = results_df, 
+        column_to_plot = column_to_plot, 
+        #save = True
+    )

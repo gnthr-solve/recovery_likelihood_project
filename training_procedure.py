@@ -9,7 +9,7 @@ from tqdm import trange, tqdm
 
 from ebm import EnergyModel
 from test_models import MultivariateGaussianModel
-from likelihood import Likelihood
+from likelihood import Likelihood, RecoveryLikelihood
 
 from training_observer import Subject
 
@@ -45,7 +45,9 @@ class TrainingProcedure(Subject):
         self.dataset = dataset
         self.epochs = epochs
         self.batch_size = batch_size
+
         self.model_batch_size = model_batch_size if model_batch_size else batch_size
+
         self.burnin_offset = burnin_offset
         self.train_loader = DataLoader(dataset, batch_size = batch_size, shuffle=True)
 
@@ -106,7 +108,6 @@ if __name__=="__main__":
     from recovery_adapter import RecoveryAdapter
     from likelihood import RecoveryLikelihood
     from timing_decorators import timing_decorator
-    from training_observer import TrainingObserver
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -135,12 +136,12 @@ if __name__=="__main__":
 
     batch_size = 200
     ### Instantiate Sampler with initial Parameters ###
-    x_0_batch = torch.zeros(size = (batch_size, 2))
+    start_batch = torch.zeros(size = (batch_size, 2))
 
     epsilon = torch.tensor(1e-1, dtype = torch.float32)
-    #sampler = ULASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    sampler = MALASampler(epsilon = epsilon, energy_model = model, x_0_batch = x_0_batch)
-    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, x_0_batch = x_0_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
 
     ### Instantiate Standard Likelihood ###
@@ -158,7 +159,7 @@ if __name__=="__main__":
         optimizer = optimizer,
         scheduler = scheduler,
         batch_size = batch_size,
-        model_batch_size = batch_size,
+        model_batch_size = batch_size/2,
         epochs = 10, 
         burnin_offset = int(batch_size/4)
     )

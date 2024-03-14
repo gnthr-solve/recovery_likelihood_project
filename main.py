@@ -11,7 +11,7 @@ def main():
     from experiment import Experiment
     from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
     from result_manager import ResultManager
-    from metrics import batch_frobenius_norm, apply_param_metric_to_df, FrobeniusError, LpError
+    from metrics import apply_param_metric_to_df, FrobeniusError, LpError
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,7 +32,7 @@ def main():
     dataset = torch.load(experiment_dir.joinpath(dataset_name))
     start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
 
-    initialize(config_path= str(experiment_dir))
+    initialize(config_path= str(experiment_dir), version_base = None)
     cfg = compose(config_name = config_name)
 
 
@@ -62,7 +62,7 @@ def main():
         file_name = result_name,
         file_folder_path = experiment_dir,
     )
-    experiment.run(num_trials = 5, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 10, exporter = exporter, observers = training_observers)
 
     exporter.load_results_df()
     df = exporter.results_df.copy()
@@ -241,14 +241,19 @@ def gaussian_test_RL():
     model = RecoveryAdapter(energy_model = org_model, perturbation_var = perturbation_var)
 
     batch_size = 200
+    model_batch_size = 200
+    
+    start_batch_size = 200
     ### Instantiate Sampler with initial Parameters ###
-    start_batch = torch.zeros(size = (batch_size, 2))
+    start_batch = torch.zeros(size = (start_batch_size, 2))
 
     epsilon = torch.tensor(1e-1, dtype = torch.float32)
     sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
     #sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
     #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
+    if start_batch.shape[0] != batch_size:
+            raise Exception("The batch dimension of the sampler starting batch doesn't coincide with the batch size.")
 
     ### Instantiate Standard Likelihood ###
     likelihood = RecoveryLikelihood(adapted_model = model, sampler = sampler)
@@ -271,6 +276,7 @@ def gaussian_test_RL():
             
             
             model_samples = likelihood.gen_model_samples(
+                batch_size = model_batch_size,
                 data_samples = X_batch,
                 burnin_offset = int(batch_size/4),
             )
