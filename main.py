@@ -25,7 +25,7 @@ def main():
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'recovery.csv'
+    result_name = 'recovery_wo_Scheduler_lr2.csv'
 
     print(experiment_dir)
     ### Load from directory ###

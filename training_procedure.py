@@ -60,7 +60,8 @@ class TrainingProcedure(Subject):
 
             self.training_epoch(curr_epoch = epoch, model_batch_size = self.model_batch_size, burnin_offset = self.burnin_offset)
 
-            self.scheduler.step()
+            if self.scheduler != None:
+                self.scheduler.step()
 
 
     def training_loop(self, X_batch: torch.Tensor, model_batch_size: int, burnin_offset: int):

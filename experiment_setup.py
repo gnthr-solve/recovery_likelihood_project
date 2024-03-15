@@ -74,7 +74,7 @@ hyper_params = HyperParameters(
     optimizer_params = {
         'lr': 1e-2,
     },
-    scheduler_class = 'ExponentialLR',
+    #scheduler_class = 'ExponentialLR',
     scheduler_params = {
         'gamma': 0.9
     },

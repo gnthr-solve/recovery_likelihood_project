@@ -7,8 +7,8 @@ HyperParameters:
   likelihood_class: RecoveryLikelihood
   optimizer_class: Adam
   optimizer_params:
-    lr: 0.05
-  scheduler_class: ExponentialLR
+    lr: 0.01
+  scheduler_class: null
   scheduler_params:
     gamma: 0.9
 ModelParameters:

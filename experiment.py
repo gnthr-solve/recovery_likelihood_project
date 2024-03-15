@@ -51,10 +51,14 @@ class ExperimentBuilder:
     def setup_train_components(self, model: EnergyModel, hyper_parameters: HyperParameters):
 
         optimizer_type = retrieve_class('torch.optim', hyper_parameters['optimizer_class'])
-        scheduler_type = retrieve_class('torch.optim.lr_scheduler', hyper_parameters['scheduler_class'])
-
         optimizer = optimizer_type(model.parameters(), **hyper_parameters['optimizer_params'])
-        scheduler = scheduler_type(optimizer, **hyper_parameters['scheduler_params'])
+
+        scheduler_class = hyper_parameters['scheduler_class']
+        if scheduler_class:
+            scheduler_type = retrieve_class('torch.optim.lr_scheduler', scheduler_class)
+            scheduler = scheduler_type(optimizer, **hyper_parameters['scheduler_params'])
+        else:
+            scheduler = None
 
         return optimizer, scheduler
     
