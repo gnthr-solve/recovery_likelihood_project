@@ -76,7 +76,7 @@ if __name__=="__main__":
     experiment_name = 'MVG_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    result_name = 'recovery_wo_Scheduler_lr3.csv'
+    result_name = 'test.csv'
 
     result_file_path = experiment_dir.joinpath(result_name)
 
@@ -86,17 +86,17 @@ if __name__=="__main__":
     data_columns = ['Likelihood Values', 'mu_L2_error', 'Sigma_frob_error']
 
     plot_index = 'Iteration Timestamp'
-    column_to_plot = 'Likelihood Values'
+    column_to_plot = 'mu_L2_error'
 
     plot_run_metric(
         results_df, 
         plot_index, 
         column_to_plot, 
-        save = True
+        #save = True
     )
 
     process_plot(
         df = results_df, 
         column_to_plot = column_to_plot, 
-        save = True
+        #save = True
     )

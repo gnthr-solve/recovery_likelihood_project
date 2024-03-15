@@ -11,7 +11,7 @@ def main():
     from experiment import Experiment
     from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
     from result_manager import ResultManager
-    from metrics import apply_param_metric_to_df, FrobeniusError, LpError
+    from metrics import apply_param_metric_to_df, FrobeniusError, LpError, ParameterAssessor
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,7 +25,7 @@ def main():
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'recovery_wo_Scheduler_lr2.csv'
+    result_name = 'test.csv'
 
     print(experiment_dir)
     ### Load from directory ###
@@ -68,23 +68,15 @@ def main():
     df = exporter.results_df.copy()
     #print(df.info())
 
-    mu_update_df = apply_param_metric_to_df(
-        df,
-        model_parameters['target_params']['mu'],
-        'mu',
-        LpError(p = 2)
+    assessor = ParameterAssessor(
+        target_params = model_parameters['target_params']
     )
-    #print(mu_update_df[:10])
+    assessor.assign_metric('mu', LpError(p = 2))
+    assessor.assign_metric('Sigma', FrobeniusError())
 
-    Sigma_update_df = apply_param_metric_to_df(
-        df,
-        model_parameters['target_params']['Sigma'],
-        'Sigma',
-        FrobeniusError(),
-    )
-
-    exporter.update_results(mu_update_df)
-    exporter.update_results(Sigma_update_df)
+    update_df = assessor.apply_param_metrics_to_df(df)
+    exporter.update_results(update_df)
+    
 
     
 

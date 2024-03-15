@@ -66,7 +66,7 @@ experiment_likelihood_class = 'RecoveryLikelihood'
 
 hyper_params = HyperParameters(
     batch_size = 200,
-    epochs = 10,
+    epochs = 20,
     burnin_offset = 50,
     model_batch_size = 200,
     likelihood_class = experiment_likelihood_class,
