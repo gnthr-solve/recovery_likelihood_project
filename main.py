@@ -11,7 +11,7 @@ def main():
     from experiment import Experiment
     from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
     from result_manager import ResultManager
-    from metrics import apply_param_metric_to_df, FrobeniusError, LpError, ParameterAssessor
+    from metrics import FrobeniusError, LpError, ParameterAssessor
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,7 +25,7 @@ def main():
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'test.csv'
+    result_name = 'recovery_wo_Scheduler_lr2.csv'
 
     print(experiment_dir)
     ### Load from directory ###

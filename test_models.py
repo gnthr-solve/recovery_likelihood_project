@@ -70,6 +70,59 @@ class MultivariateGaussianModel(EnergyModel):
 
 
 """
+Univariate Polynomial Model
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class UnivPolynomial(EnergyModel):
+
+    def __init__(self, W_0: torch.Tensor):
+        """
+        Univariate Polynomial Energy
+        Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**i
+        """
+        super().__init__()
+        self.params['W'] = W_0.clone()
+
+    
+    def energy(self, x: torch.Tensor):
+
+        W = self.params['W']
+        x = torch.atleast_1d(x)
+
+        # Use torchs method to create a matching Vandermonde Matrix
+        vander = torch.vander(x, W.shape[0], increasing = True)
+        
+        result = torch.matmul(vander, W)
+
+        return result
+    
+
+    def energy_grad(self, x: torch.Tensor):
+        
+        W_prime = self.params['W'][1:]
+        x = torch.atleast_1d(x)
+
+        coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
+        W_prime = W_prime * coeff
+
+        vander = torch.vander(x, W_prime.shape[0], increasing = True)
+        
+        grad = torch.matmul(vander, W_prime)
+
+        return grad
+    
+
+    def avg_param_grad(self, x: torch.Tensor):
+
+        W = self.params['W']
+
+        vander = torch.vander(x, W.shape[0], increasing = True)
+        
+        return torch.sum(vander, dim = 0) / x.shape[0]
+
+
+
+"""
 Simple Linear Model
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
@@ -113,7 +166,7 @@ class VisibleBoltzmann(EnergyModel):
 
         result = quadratic_form_batch(x, W)
 
-        return -result/2
+        return result/2
 
 
 

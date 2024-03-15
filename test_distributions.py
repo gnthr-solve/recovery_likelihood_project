@@ -44,60 +44,24 @@ class Distribution(EnergyDistribution):
 
 
 
+
 """
-Gaussians
+Multivariate Gaussian
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-class UnivariateGaussian(Distribution):
 
-    def __init__(self, mu, sigma):
-        #super().__init__()
-        self.mu = mu
-        self.sigma = sigma
-
-
-    def density(self, x):
-        
-        density_value = torch.exp(-(x - self.mu)**2 /(2*self.sigma**2)) / torch.sqrt(2 * torch.pi * self.sigma**2)
-
-        return density_value
-
-
-    def kernel(self, x):
-
-        kernel_value = torch.exp(-(x - self.mu)**2 /(2*self.sigma**2))
-
-        return kernel_value
-
-
-    def energy(self, x):
-
-        energy = -torch.log(self.kernel(x))
-        #energy = torch.log(self.density(x))
-        #energy = -((x/self.sigma - self.mu/self.sigma)**2 - torch.log(2 * torch.pi * self.sigma**2))/2
-
-        return energy
-    
-
-    def energy_grad(self, x):
-
-        #grad = (self.mu - x) / self.sigma**2
-        grad = (x - self.mu) / self.sigma**2
-
-        return grad
-        
 
 
 class MultivariateGaussian(Distribution):
 
-    def __init__(self, mu, Sigma):
+    def __init__(self, mu: torch.Tensor, Sigma: torch.Tensor):
         #super().__init__()
         self.mu = mu
         self.Sigma = Sigma
         self.Sigma_inv = torch.inverse(Sigma)
 
 
-    def density(self, x):
+    def density(self, x: torch.Tensor):
 
         dim = x.size(-1)
 
@@ -108,71 +72,27 @@ class MultivariateGaussian(Distribution):
         return density_value
 
 
-    def kernel(self, x):
-
-        kernel_value = torch.exp(-tla.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2)
-
-        return kernel_value
-
-
-    def energy(self, x):
-
-        energy = -torch.log(self.kernel(x))
-        #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
-
-        return energy
-    
-
-    def energy_grad(self, x):
-
-        grad = tla.multi_dot([self.Sigma_inv, (x - self.mu)])
-
-        return grad
-
-
-
-
-class MultivariateGaussianB(Distribution):
-
-    def __init__(self, mu, Sigma):
-        #super().__init__()
-        self.mu = mu
-        self.Sigma = Sigma
-        self.Sigma_inv = torch.inverse(Sigma)
-
-
-    def density(self, x):
-
-        dim = x.size(-1)
-
-        kernel_value = self.kernel(x)
-        
-        density_value = kernel_value / torch.sqrt((2 * torch.pi)**dim * tla.det(self.Sigma))
-
-        return density_value
-
-
-    def kernel(self, x):
+    def kernel(self, x: torch.Tensor):
 
         # x can be of shape (d,) or (n, d)
-        # Reshape mu and Sigma_inv to support broadcasting
-        mu = self.mu.unsqueeze(0)  # Shape (1, d)
-        Sigma_inv = self.Sigma_inv.unsqueeze(0)  # Shape (1, d, d)
+        x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
 
-        # Perform batch matrix multiplication for the quadratic form
-        # (x - mu) is of shape (n, d), unsqueeze to (n, 1, d) for bmm
-        # (x - mu).unsqueeze(1) @ Sigma_inv performs (n, 1, d) @ (1, d, d) -> (n, 1, d)
-        # The result is then multiplied by (x - mu).unsqueeze(-1) of shape (n, d, 1)
-        # Resulting in a shape of (n, 1, 1), which we squeeze back to (n,)
-        diff = x - mu
-        exponent = -0.5 * diff.unsqueeze(1).bmm(Sigma_inv).bmm(diff.unsqueeze(-1)).squeeze()
+        # Reshape mu and Sigma_inv to support broadcasting
+        mu = self.params['mu'].unsqueeze(0)  # Shape (1, d)
+        Sigma_inv = self.Sigma_inv()
+
+        diff = x - mu # shape (1, d) or (n, d)
+        exponent = -0.5 * tla.vecdot(
+            torch.matmul(diff, Sigma_inv),
+            diff,
+        )
 
         kernel_value = torch.exp(exponent)
-
+    
         return kernel_value
 
 
-    def energy(self, x):
+    def energy(self, x: torch.Tensor):
 
         energy = -torch.log(self.kernel(x))
         #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
@@ -180,9 +100,9 @@ class MultivariateGaussianB(Distribution):
         return energy
     
 
-    def energy_grad(self, x):
+    def energy_grad(self, x: torch.Tensor):
 
-        grad = tla.multi_dot([self.Sigma_inv, (x - self.mu)])
+        grad = tla.multi_dot([(x - self.mu), self.Sigma_inv])
 
         return grad
 

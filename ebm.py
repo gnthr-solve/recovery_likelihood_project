@@ -16,6 +16,10 @@ and implement the energy functional.
 Gradients with respect to the input or the parameters can then be calculated automatically using the inherited functions,
 or implemented directly if a gradient is known analytically to save computation resources.
 energy_grad is predominantly used in the sampling algorithms, while avg_param_grad computes the MC estimates for training.
+
+ATTENTION: Here the convention is that the density of an energy model is given as
+p(x) = exp(-U(x))/Z
+where U is the energy functional. I.e. the energy method is understood to be negated when producing a density.
 """
 
 class EnergyModel(nn.Module):
