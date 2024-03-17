@@ -62,8 +62,13 @@ class PlotMatrix:
         key_tuples = self.plots.keys()
         rows = max([key[0] for key in key_tuples]) + 1
         cols = max([key[1] for key in key_tuples]) + 1
-
-        self.fig, self.axes = plt.subplots(rows, cols, squeeze = False)
+        #figsize=(15,0.4*number_diagrams), sharex=True
+        self.fig, self.axes = plt.subplots(
+           rows, 
+           cols, 
+           sharex = 'col', 
+           squeeze = False,
+        )
 
 
     def draw(self):
@@ -76,7 +81,7 @@ class PlotMatrix:
             plot.draw(ax)
         
         #.get_current_fig_manager().set_window_title("Trends Vorbehandlung " + 'name_entdata')
-        
+        #.subplots_adjust(wspace=0.4)
         plt.show()
 
 

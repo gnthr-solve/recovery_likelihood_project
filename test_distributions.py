@@ -7,21 +7,12 @@ import typing
 from abc import ABC, abstractmethod
 from ebm import EnergyModel
 
-class EnergyDistribution(ABC):
 
-    @abstractmethod
-    def energy(self, x: torch.Tensor, *args, **kwargs):
-
-        pass
-
-    @abstractmethod
-    def energy_grad(self, x: torch.Tensor, *args, **kwargs):
-
-        pass
-
-
-
-class Distribution(EnergyDistribution):
+"""
+Base Classes
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class Distribution(ABC):
 
     def density(self, x: torch.Tensor, *args, **kwargs):
 
@@ -30,18 +21,38 @@ class Distribution(EnergyDistribution):
         return density_value
     
 
+    @abstractmethod
     def kernel(self, x: torch.Tensor, *args, **kwargs):
 
-        return torch.exp(-self.energy(x))
+        pass
     
     
-    def MC_expectation(self, samples, transform = (lambda x: x), *args, **kwargs):
+   
+class EnergyDistribution(Distribution):
 
-        transformed_samples = transform(samples)
 
-        MC_mean = torch.mean(transformed_samples)
+    def kernel(self, x: torch.Tensor, *args, **kwargs):
+        return torch.exp( - self.energy(x = x))
 
-        return MC_mean
+
+    @abstractmethod
+    def energy(self, x: torch.Tensor, *args, **kwargs):
+
+        pass
+
+    
+    def energy_grad(self, x: torch.Tensor, *args, **kwargs):
+
+        x.requires_grad_(True)
+
+        # Compute the energy
+        energy = self.energy(x)
+
+        out = torch.ones_like(energy)
+        # Compute gradients with respect to x
+        gradient = torch.autograd.grad(outputs = energy, inputs = x, grad_outputs = out)[0]
+
+        return gradient
 
 
 
@@ -49,7 +60,7 @@ class Distribution(EnergyDistribution):
 Distribution Adapter
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-class DistributionAdapter(Distribution):
+class DistributionAdapter(EnergyDistribution):
 
     def __init__(self, energy_model: EnergyModel, norm_const: torch.Tensor = None):
         self.energy_model = energy_model
@@ -58,17 +69,15 @@ class DistributionAdapter(Distribution):
     def energy(self, x: torch.Tensor, *args, **kwargs):
         return self.energy_model(x)
 
+
 """
 Multivariate Gaussian
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-
-
-
-class MultivariateGaussian(Distribution):
+class MultivariateGaussian(EnergyDistribution):
 
     def __init__(self, mu: torch.Tensor, Sigma: torch.Tensor):
-        #super().__init__()
+
         self.mu = mu
         self.Sigma = Sigma
         self.Sigma_inv = torch.inverse(Sigma)
@@ -118,6 +127,132 @@ class MultivariateGaussian(Distribution):
         grad = tla.multi_dot([(x - self.mu), self.Sigma_inv])
 
         return grad
+
+
+
+"""
+Moderated Cosine
+-------------------------------------------------------------------------------------------------------------------------------------------
+Becomes more multimodal the larger W_cos gets.
+"""
+
+class ModeratedCosine(EnergyDistribution):
+
+    def __init__(self, W_cos: torch.Tensor, mu: torch.Tensor):
+        
+        self.params = {
+            'W_cos': W_cos.clone(),
+            'mu': mu.clone(),
+        }
+
+
+    def energy(self, x: torch.Tensor):
+
+        W_cos = self.params['W_cos']
+        mu = self.params['mu']
+
+        #Make x a tensor with dim = 2, if mu is scalar and x a batch the x values need to be stacked.
+        x = torch.atleast_1d(x)
+        x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
+
+        diff = x - mu
+
+        cos_term = W_cos * torch.cos(x)
+        log_norm_term = torch.log(torch.norm(diff, p = 2, dim = 1)**2 + 1)
+
+        return cos_term + log_norm_term
+    
+
+
+"""
+LogSum
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+class TwoLogSum(EnergyDistribution):
+
+    def __init__(self, W: torch.Tensor, mu_1: torch.Tensor, mu_2: torch.Tensor):
+        """
+        args:
+            W: tensor([w_1, w_2])
+            Weights for modes
+
+            mu_1: tensor of shape (d,)
+            mu_2: tensor of shape (d,)
+            Locations of the modes
+        """
+        self.params = {
+            'W': W.clone(),
+            'mu_1': mu_1.clone(),
+            'mu_2': mu_2.clone(),
+        }
+
+
+    def energy(self, x: torch.Tensor):
+
+        W = self.params['W_cos']
+        mu_1 = self.params['mu_1']
+        mu_2 = self.params['mu_2']
+
+        #Make x a tensor with dim = 2, if mu is scalar and x a batch the x values need to be stacked.
+        x = torch.atleast_1d(x)
+        x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
+
+        diff_1 = x - mu_1
+        diff_2 = x - mu_2
+
+        log_norm_1 = torch.log(torch.norm(diff_1, p = 2, dim = 1)**2 + 1)
+        log_norm_2 = torch.log(torch.norm(diff_2, p = 2, dim = 1)**2 + 1)
+
+        return W[0]*log_norm_1 + W[1]*log_norm_2
+    
+
+
+"""
+Univariate Polynomial Distribution
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class UnivPolynomial(EnergyDistribution):
+
+    def __init__(self, W_0: torch.Tensor):
+        """
+        Univariate Polynomial Energy
+        Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**i
+        """
+        self.params = {}
+        self.params['W'] = W_0.clone()
+
+    
+    def energy(self, x: torch.Tensor):
+
+        W = self.params['W']
+        x = torch.atleast_1d(x)
+
+        # Use torchs method to create a matching Vandermonde Matrix
+        vander = torch.vander(x, W.shape[0], increasing = True)
+        
+        result = torch.matmul(vander, W)
+
+        return result
+    
+
+    def energy_grad(self, x: torch.Tensor):
+        
+        W_prime = self.params['W'][1:]
+        x = torch.atleast_1d(x)
+
+        coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
+        W_prime = W_prime * coeff
+
+        vander = torch.vander(x, W_prime.shape[0], increasing = True)
+        
+        grad = torch.matmul(vander, W_prime)
+
+        return grad
+
+
+
+
 
 
 """
