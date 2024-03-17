@@ -2,18 +2,20 @@
 
 import torch
 import torch.linalg as tla
-from abc import ABC, abstractmethod
 import typing
+
+from abc import ABC, abstractmethod
+from ebm import EnergyModel
 
 class EnergyDistribution(ABC):
 
     @abstractmethod
-    def energy(self, x, *args, **kwargs):
+    def energy(self, x: torch.Tensor, *args, **kwargs):
 
         pass
 
     @abstractmethod
-    def energy_grad(self, x, *args, **kwargs):
+    def energy_grad(self, x: torch.Tensor, *args, **kwargs):
 
         pass
 
@@ -21,17 +23,16 @@ class EnergyDistribution(ABC):
 
 class Distribution(EnergyDistribution):
 
-    def density(self, x, *args, **kwargs):
+    def density(self, x: torch.Tensor, *args, **kwargs):
 
         density_value = self.kernel(x = x) / self._norm_const
 
         return density_value
     
 
-    @abstractmethod
-    def kernel(self, x, *args, **kwargs):
+    def kernel(self, x: torch.Tensor, *args, **kwargs):
 
-        pass
+        return torch.exp(-self.energy(x))
     
     
     def MC_expectation(self, samples, transform = (lambda x: x), *args, **kwargs):
@@ -44,6 +45,18 @@ class Distribution(EnergyDistribution):
 
 
 
+"""
+Distribution Adapter
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class DistributionAdapter(Distribution):
+
+    def __init__(self, energy_model: EnergyModel, norm_const: torch.Tensor = None):
+        self.energy_model = energy_model
+        self._norm_const = norm_const
+
+    def energy(self, x: torch.Tensor, *args, **kwargs):
+        return self.energy_model(x)
 
 """
 Multivariate Gaussian
