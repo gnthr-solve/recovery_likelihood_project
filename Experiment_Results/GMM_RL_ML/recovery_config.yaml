@@ -1,0 +1,94 @@
+HyperParameters:
+  _target_: experiment_params.HyperParameters
+  batch_size: 200
+  epochs: 20
+  burnin_offset: 50
+  model_batch_size: 200
+  likelihood_class: RecoveryLikelihood
+  optimizer_class: Adam
+  optimizer_params:
+    lr: 0.01
+  scheduler_class: null
+  scheduler_params:
+    gamma: 0.9
+ModelParameters:
+  _target_: experiment_params.ModelParameters
+  model_class: SimpleGaussianMixtureModel
+  target_params:
+    W:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 0.20000000298023224
+      - 0.800000011920929
+    mu_1:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 2.0
+      - 2.0
+    Sigma_1:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - - 2.0
+        - 0.0
+      - - 0.0
+        - 2.0
+    mu_2:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - -1.0
+      - -1.0
+    Sigma_2:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - - 1.0
+        - 0.0
+      - - 0.0
+        - 1.0
+  start_params:
+    start_weights:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 0.5
+      - 0.5
+    start_mu_1:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 3.0
+      - 3.0
+    start_Sigma_1:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - - 3.0
+        - 0.0
+      - - 0.0
+        - 1.0
+    start_mu_2:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 1.0
+      - 0.0
+    start_Sigma_2:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - - 2.0
+        - 0.0
+      - - 0.0
+        - 2.0
+  requires_adapter: true
+  perturbation_var:
+    _target_: helper_tools.convert_to_tensor
+    data: 1.0
+SamplingParameters:
+  _target_: experiment_params.SamplingParameters
+  sampler_class: MALASampler
+  epsilon:
+    _target_: helper_tools.convert_to_tensor
+    data: 0.10000000149011612
+  L: 3
+  M:
+    _target_: helper_tools.convert_to_tensor
+    data:
+    - - 1.0
+      - 0.0
+    - - 0.0
+      - 1.0

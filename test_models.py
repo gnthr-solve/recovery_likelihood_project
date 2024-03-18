@@ -68,6 +68,85 @@ class MultivariateGaussianModel(EnergyModel):
         return grad
 
 
+"""
+Mixture of two Gaussians Model
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class SimpleGaussianMixtureModel(EnergyModel):
+
+    def __init__(
+            self,
+            start_weights: torch.Tensor,
+            start_mu_1: torch.Tensor, 
+            start_Sigma_1: torch.Tensor, 
+            start_mu_2: torch.Tensor, 
+            start_Sigma_2: torch.Tensor, 
+        ):
+        super().__init__()
+
+        self.params['W'] = start_weights.clone()
+
+        self.params['mu_1'] = start_mu_1.clone()
+        self.params['Sigma_1'] = start_Sigma_1.clone()
+
+        self.params['mu_2'] = start_mu_2.clone()
+        self.params['Sigma_2'] = start_Sigma_2.clone()
+
+        self.Sigma_inv = (lambda Sigma: torch.inverse(Sigma))
+        self.dim = start_mu_1.shape[-1]
+
+
+    def kernel(self, x: torch.Tensor):
+
+        # x can be of shape (d,) or (n, d)
+        x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
+
+        W = self.params['W']
+
+        K_1 = self.component_kernel(x = x, component = 1)
+        K_2 = self.component_kernel(x = x, component = 2)
+
+        Z_1, Z_2 = self.norm_const()
+
+        kernel_value = W[0]* Z_2 * K_1 + W[1]* Z_1 * K_2
+    
+        return kernel_value
+    
+
+    def component_kernel(self, x: torch.Tensor, component: int):
+
+        # Reshape mu and Sigma_inv to support broadcasting
+        mu = self.params[f'mu_{component}'].unsqueeze(0)  # Shape (1, d)
+        Sigma_inv = self.Sigma_inv(self.params[f'Sigma_{component}'])
+
+        diff = x - mu # shape (1, d) or (n, d)
+        exponent = -0.5 * tla.vecdot(
+            torch.matmul(diff, Sigma_inv),
+            diff,
+        )
+
+        kernel_value = torch.exp(exponent)
+    
+        return kernel_value
+
+
+    def energy(self, x: torch.Tensor):
+
+        energy = -torch.log(self.kernel(x))
+        #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
+
+        return energy
+    
+
+    def norm_const(self):
+        
+        Z_1 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_1']))
+        Z_2 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_2']))
+        
+        return Z_1, Z_2
+        
+
+
 
 """
 Univariate Polynomial Model

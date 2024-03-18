@@ -5,7 +5,7 @@ import typing
 
 from abc import ABC, abstractmethod
 from typing import Any
-
+from helper_tools import enable_grad_decorator
 
 """
 Energy Model Base Class
@@ -38,7 +38,8 @@ class EnergyModel(nn.Module):
     def energy(self, x: torch.Tensor):
         pass
     
-
+    
+    @enable_grad_decorator
     def energy_grad(self, x: torch.Tensor):
         """
         Gradient of energy w.r.t. inputs at x for Langevin/HMC type sampling.

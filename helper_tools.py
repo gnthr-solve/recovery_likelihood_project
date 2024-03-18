@@ -24,6 +24,18 @@ def no_grad_decorator(func):
     return wrapper
 
 
+"""
+Enable-Grad Decorator
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def enable_grad_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with torch.enable_grad():
+            result = func(*args, **kwargs)
+        return result
+    return wrapper
+
 
 """
 check_nan Decorator
