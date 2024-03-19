@@ -19,13 +19,13 @@ def main():
 
     ### Set Paths ###
     result_directory = Path('./Experiment_Results')
-    experiment_name = 'GMM_RL_ML'
+    experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'recovery_wo_Scheduler_lr2.csv'
+    result_name = 'recovery_results'
 
     print(experiment_dir)
     ### Load from directory ###
@@ -71,11 +71,14 @@ def main():
     assessor = ParameterAssessor(
         target_params = model_parameters['target_params']
     )
+    
     assessor.assign_metric('W', LpError(p = 2))
+    '''
     assessor.assign_metric('mu_1', LpError(p = 2))
     assessor.assign_metric('Sigma_1', FrobeniusError())
     assessor.assign_metric('mu_2', LpError(p = 2))
     assessor.assign_metric('Sigma_2', FrobeniusError())
+    '''
 
     update_df = assessor.apply_param_metrics_to_df(df)
     exporter.update_results(update_df)
@@ -304,8 +307,8 @@ def gaussian_test_RL():
 
 if __name__=="__main__":
 
-    #main()
-    gaussian_test_ML()
+    main()
+    #gaussian_test_ML()
     #gaussian_test_RL()
 
     

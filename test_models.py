@@ -154,19 +154,20 @@ Univariate Polynomial Model
 """
 class UnivPolynomial(EnergyModel):
 
-    def __init__(self, W_0: torch.Tensor):
+    def __init__(self, start_W: torch.Tensor):
         """
         Univariate Polynomial Energy
         Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**i
         """
         super().__init__()
-        self.params['W'] = W_0.clone()
+        self.params['W'] = start_W.clone()
 
     
     def energy(self, x: torch.Tensor):
 
         W = self.params['W']
-        x = torch.atleast_1d(x)
+        #Squeeze necessary to allow sampler batches of shape (n, 1)
+        x = torch.atleast_1d(x).squeeze()
 
         # Use torchs method to create a matching Vandermonde Matrix
         vander = torch.vander(x, W.shape[0], increasing = True)
@@ -179,7 +180,8 @@ class UnivPolynomial(EnergyModel):
     def energy_grad(self, x: torch.Tensor):
         
         W_prime = self.params['W'][1:]
-        x = torch.atleast_1d(x)
+        #Squeeze necessary to allow sampler batches of shape (n, 1)
+        x = torch.atleast_1d(x).squeeze()
 
         coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
         W_prime = W_prime * coeff
@@ -187,7 +189,9 @@ class UnivPolynomial(EnergyModel):
         vander = torch.vander(x, W_prime.shape[0], increasing = True)
         
         grad = torch.matmul(vander, W_prime)
-
+        #grad needs to be unsqueezed, otherwise sampler batch gradient calculations malfunction
+        grad = grad.unsqueeze(dim = -1)
+        
         return grad
     
 

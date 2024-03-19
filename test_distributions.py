@@ -234,7 +234,6 @@ class UnivPolynomial(EnergyDistribution):
         vander = torch.vander(x, W.shape[0], increasing = True)
         
         result = torch.matmul(vander, W)
-        result = result.unsqueeze(dim = -1)
         
         return result
     

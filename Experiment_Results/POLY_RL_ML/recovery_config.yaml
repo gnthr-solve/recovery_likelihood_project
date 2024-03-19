@@ -1,0 +1,49 @@
+HyperParameters:
+  _target_: experiment_params.HyperParameters
+  batch_size: 200
+  epochs: 20
+  burnin_offset: 50
+  model_batch_size: 200
+  likelihood_class: RecoveryLikelihood
+  optimizer_class: Adam
+  optimizer_params:
+    lr: 0.01
+  scheduler_class: null
+  scheduler_params:
+    gamma: 0.9
+ModelParameters:
+  _target_: experiment_params.ModelParameters
+  model_class: UnivPolynomial
+  target_params:
+    W:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 0.0
+      - -1.2000000476837158
+      - -0.699999988079071
+      - 2.0
+      - 1.0
+  start_params:
+    start_W:
+      _target_: helper_tools.convert_to_tensor
+      data:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+  requires_adapter: true
+  perturbation_var:
+    _target_: helper_tools.convert_to_tensor
+    data: 1.0
+SamplingParameters:
+  _target_: experiment_params.SamplingParameters
+  sampler_class: MALASampler
+  epsilon:
+    _target_: helper_tools.convert_to_tensor
+    data: 0.10000000149011612
+  L: 3
+  M:
+    _target_: helper_tools.convert_to_tensor
+    data:
+    - - 1.0
