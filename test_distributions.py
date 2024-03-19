@@ -6,6 +6,8 @@ import typing
 
 from abc import ABC, abstractmethod
 from ebm import EnergyModel
+from helper_tools import enable_grad_decorator
+
 
 
 """
@@ -226,28 +228,31 @@ class UnivPolynomial(EnergyDistribution):
     def energy(self, x: torch.Tensor):
 
         W = self.params['W']
-        x = torch.atleast_1d(x)
-
+        x = torch.atleast_1d(x).squeeze()
+        
         # Use torchs method to create a matching Vandermonde Matrix
         vander = torch.vander(x, W.shape[0], increasing = True)
         
         result = torch.matmul(vander, W)
-
+        result = result.unsqueeze(dim = -1)
+        
         return result
     
 
+    @enable_grad_decorator
     def energy_grad(self, x: torch.Tensor):
         
         W_prime = self.params['W'][1:]
-        x = torch.atleast_1d(x)
-
+        x = torch.atleast_1d(x).squeeze()
+        
         coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
         W_prime = W_prime * coeff
 
         vander = torch.vander(x, W_prime.shape[0], increasing = True)
         
         grad = torch.matmul(vander, W_prime)
-
+        grad = grad.unsqueeze(dim = -1)
+        
         return grad
 
 

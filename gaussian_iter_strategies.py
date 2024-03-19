@@ -43,8 +43,8 @@ class StdIterStrategy(IterStrategy):
 
     def generate(self, chain_length: int):
 
-        samples = self.dist.sample(sample_shape = (chain_length, self.chain_num))
-
+        samples = self.dist.sample(sample_shape = (chain_length, self.chain_num))#.squeeze()
+        
         self.sample_iterator = iter(samples)
 
 

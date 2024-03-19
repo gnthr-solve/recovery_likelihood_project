@@ -26,7 +26,7 @@ class EnergySampler(ABC):
         self.energy_model = energy_model
 
         shape = start_batch.shape
-        self.data_dim = shape[-1]
+        self.data_dim = shape[-1] if start_batch.dim() > 1 else 1
         self.chain_num = shape[0]
 
         self.curr_state_batch = start_batch
@@ -43,9 +43,10 @@ class EnergySampler(ABC):
     def sample(self, num_samples: int, burnin_offset: int = 0): 
         ### Template Method ###
 
-        chain_length = int(torch.ceil( num_samples / self.chain_num )) + burnin_offset
+        chain_length = int(torch.ceil( num_samples / self.chain_num )) + int(burnin_offset)
         #print(chain_length)
         shape = (chain_length, self.chain_num, self.data_dim)
+        #print(shape)
 
         self.z_iterator.generate(chain_length)
 
@@ -129,14 +130,14 @@ class MALASampler(EnergySampler):
         
         x_batch_energy = self.energy_model.energy(x_batch)
         x_hat_batch_energy = self.energy_model.energy(x_hat_batch)
-
+        
         grad_x_batch = self.energy_model.energy_grad(x_batch)
         grad_x_hat_batch = self.energy_model.energy_grad(x_hat_batch)
-
-        log_x_proposal = tla.norm((x_batch - x_hat_batch + self.epsilon * grad_x_hat_batch), dim=1) ** 2
-        log_x_hat_proposal = tla.norm((x_hat_batch - x_batch + self.epsilon * grad_x_batch), dim=1) ** 2
+        
+        log_x_proposal = tla.norm((x_batch - x_hat_batch + self.epsilon * grad_x_hat_batch), dim = 1) ** 2
+        log_x_hat_proposal = tla.norm((x_hat_batch - x_batch + self.epsilon * grad_x_batch), dim = 1) ** 2
         log_proposal = - (log_x_proposal - log_x_hat_proposal) / (4*self.epsilon)
-
+        
         alpha = torch.exp(x_batch_energy - x_hat_batch_energy + log_proposal)
 
         u_batch = torch.rand(alpha.shape)

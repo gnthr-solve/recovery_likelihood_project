@@ -130,8 +130,8 @@ def gaussian_test_ML():
     start_batch = torch.zeros(size = (200,2))
 
     epsilon = torch.tensor(1e-3, dtype = torch.float32)
-    sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
-    #sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    #sampler = ULASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
+    sampler = MALASampler(epsilon = epsilon, energy_model = model, start_batch = start_batch)
     #sampler = HMCSampler(epsilon = epsilon, L = 3, M = torch.eye(n = 2), energy_model = model, start_batch = start_batch)
 
 
@@ -304,8 +304,8 @@ def gaussian_test_RL():
 
 if __name__=="__main__":
 
-    main()
-    #gaussian_test_ML()
+    #main()
+    gaussian_test_ML()
     #gaussian_test_RL()
 
     

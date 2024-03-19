@@ -9,24 +9,16 @@ from training_observer import TimingObserver, ParameterObserver, LikelihoodObser
 from result_manager import ResultManager
 from metrics import apply_param_metric_to_df, FrobeniusError, LpError
 
+from norm_const import norm_const
+from test_distributions import UnivPolynomial
 # check computation backend to use
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("-device:", device)
 
-### Set Paths ###
-result_directory = Path('./Experiment_Results')
-experiment_name = 'MVG_RL_ML'
-experiment_dir = result_directory / experiment_name
+W = torch.tensor([0, -1.2, -0.7, 2, 1], dtype=torch.float32)
 
-config_name = 'recovery_config.yaml'
+poly_dist = UnivPolynomial(W_0=W)
 
-initialize(config_path= str(experiment_dir), version_base = None)
-cfg = compose(config_name = config_name)
+poly_norm_const = norm_const(poly_dist, 1)
 
-
-### Experiment Setup ###
-hyper_parameters = instantiate(cfg.HyperParameters)
-model_parameters = instantiate(cfg.ModelParameters)
-sampling_parameters = instantiate(cfg.SamplingParameters)
-
-print(hyper_parameters['scheduler_class'])
+print(poly_norm_const)

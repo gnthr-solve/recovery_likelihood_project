@@ -40,15 +40,18 @@ Plot Matrix
 
 class PlotMatrix:
 
-    def __init__(self):
+    def __init__(self, title: str, sharex: str|bool = False, save: bool = False ):
         
         self.plots = {}
+        self.title = title
+        self.sharex = sharex
+        self.save = save
 
 
     def add_plot(self, row, col, plot: PlotComponent):
 
         if not isinstance(plot, PlotComponent):
-            raise TypeError("Plot must be an PlotComponent subclass")
+            raise TypeError("Plot must be a PlotComponent subclass")
         
         self.plots[(row, col)] = plot
 
@@ -66,7 +69,7 @@ class PlotMatrix:
         self.fig, self.axes = plt.subplots(
            rows, 
            cols, 
-           sharex = 'col', 
+           sharex = self.sharex, 
            squeeze = False,
         )
 
@@ -80,8 +83,14 @@ class PlotMatrix:
             ax = self.axes[row, col]  
             plot.draw(ax)
         
-        #.get_current_fig_manager().set_window_title("Trends Vorbehandlung " + 'name_entdata')
+        #.get_current_fig_manager().set_window_title()
         #.subplots_adjust(wspace=0.4)
+        self.fig.suptitle(self.title)
+        
+        if self.save:
+            filename = self.title.lower().replace(" ", "_")
+            plt.savefig(f'Figures/{filename}')
+
         plt.show()
 
 
@@ -92,7 +101,7 @@ Concrete Plot Components - To be inserted in Plot Matrix
 """
 class TimeSeriesPlot(PlotComponent):
   
-  def __init__(self, results_df: pd.DataFrame, plot_index: str, column_to_plot: str, save: bool = False):
+  def __init__(self, results_df: pd.DataFrame, plot_index: str, column_to_plot: str):
     
     self.results_df = results_df
     self.column_to_plot = column_to_plot
@@ -115,7 +124,7 @@ class TimeSeriesPlot(PlotComponent):
 
 class ProcessPlot(PlotComponent):
   
-  def __init__(self, results_df: pd.DataFrame, column_to_plot: str, save: bool = False):
+  def __init__(self, results_df: pd.DataFrame, column_to_plot: str):
     
     self.results_df = results_df
     self.column_to_plot = column_to_plot
@@ -218,7 +227,7 @@ def process_plot(df, column_to_plot, save: bool = False):
 if __name__=="__main__":
     ### Set Paths ###
     result_directory = Path('./Experiment_Results')
-    experiment_name = 'MVG_RL_ML'
+    experiment_name = 'GMM_RL_ML'
     experiment_dir = result_directory / experiment_name
 
     result_name = 'recovery_wo_Scheduler_lr2.csv'
@@ -228,21 +237,24 @@ if __name__=="__main__":
     results_df = pd.read_csv(result_file_path)
 
 
-    data_columns = ['Likelihood Values', 'mu_L2_error', 'Sigma_frob_error']
+    data_columns = ['Likelihood Values', 'W_L2_error', 'mu_1_L2_error', 'Sigma_1_frob_error', 'mu_2_L2_error', 'Sigma_2_frob_error']
 
     plot_index = 'Iteration Timestamp'
-    column_to_plot = 'mu_L2_error'
+    #column_to_plot = 'mu_L2_error'
 
     ''''''
     plot_dict = {
         (i, j): TimeSeriesPlot(results_df, plot_index, column_to_plot)
         if j == 0 
         else ProcessPlot(results_df = results_df, column_to_plot = column_to_plot)
-        for i, column_to_plot in enumerate(data_columns)
+        for i, column_to_plot in enumerate(data_columns[:])
         for j in range(2)
     }
 
     
-    plotter = PlotMatrix()
+    plotter = PlotMatrix(
+       title='Gaussian Mixture Model', 
+       #sharex = 'col'
+    )
     plotter.add_plot_dict(plot_dict=plot_dict)
     plotter.draw()
