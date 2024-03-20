@@ -20,7 +20,7 @@ experiment_name = 'POLY_RL_ML'
 experiment_dir = result_directory / experiment_name
 experiment_dir.mkdir(parents=True, exist_ok=True)  # Create parent directories if needed
 
-config_name = 'marginal_config.yaml'
+config_name = 'recovery_config.yaml'
 config_path = experiment_dir.joinpath(config_name)
 print(config_path)
 
@@ -30,11 +30,11 @@ Tensor Parameters - Change tensors here
 """
 ### Model ###
 target_params = {
-    'W': torch.tensor([0, -1.2, -0.7, 2, 1], dtype = torch.float32),
+    'W': torch.tensor([-1.2, -0.7, 2, 1], dtype = torch.float32),
 }
 
 start_params = {
-    'start_W': torch.tensor([0, 1, 1, 1, 1], dtype = torch.float32),
+    'start_W': torch.tensor([1, 1, 1, 1], dtype = torch.float32),
 }
 
 perturbation_var = torch.tensor(1, dtype = torch.float32)
@@ -56,7 +56,7 @@ ATTENTION:
 For recovery likelihood the number of MC chains is fixed to the batch_size. 
 Thus the model_batch_size MUST be an integer multiple of the batch_size to avoid an error. 
 """
-experiment_likelihood_class = 'Likelihood'
+experiment_likelihood_class = 'RecoveryLikelihood'
 
 hyper_params = HyperParameters(
     batch_size = 200,

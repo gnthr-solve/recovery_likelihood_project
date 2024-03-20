@@ -139,6 +139,7 @@ class Experiment:
                 'Epsilon': float(self.sampling_parameters['epsilon']),
                 'Likelihood': 'Marginal' if self.hyper_parameters['likelihood_class'] == 'Likelihood' else 'Recovery',
                 'Burnin Offset': self.hyper_parameters['burnin_offset'],
+                'Scheduler': self.hyper_parameters['scheduler_class'],
             }
 
             for col_key, value in comparison_columns.items():

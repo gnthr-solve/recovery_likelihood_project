@@ -148,8 +148,9 @@ class SimpleGaussianMixtureModel(EnergyModel):
 
 
 
+
 """
-Univariate Polynomial Model
+Univariate Polynomial Model without x**0 coefficient
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class UnivPolynomial(EnergyModel):
@@ -157,7 +158,7 @@ class UnivPolynomial(EnergyModel):
     def __init__(self, start_W: torch.Tensor):
         """
         Univariate Polynomial Energy
-        Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**i
+        Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**(i+1)
         """
         super().__init__()
         self.params['W'] = start_W.clone()
@@ -170,8 +171,11 @@ class UnivPolynomial(EnergyModel):
         x = torch.atleast_1d(x).squeeze()
 
         # Use torchs method to create a matching Vandermonde Matrix
-        vander = torch.vander(x, W.shape[0], increasing = True)
+        vander = torch.vander(x, W.shape[0] + 1, increasing = True)
         
+        #remove 0 coefficient
+        vander = vander[:, 1:]
+
         result = torch.matmul(vander, W)
 
         return result
@@ -179,16 +183,16 @@ class UnivPolynomial(EnergyModel):
 
     def energy_grad(self, x: torch.Tensor):
         
-        W_prime = self.params['W'][1:]
+        W = self.params['W']
         #Squeeze necessary to allow sampler batches of shape (n, 1)
         x = torch.atleast_1d(x).squeeze()
 
-        coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
-        W_prime = W_prime * coeff
+        coeff = torch.arange(W.shape[0], dtype=x.dtype) + 1
+        W = W * coeff
 
-        vander = torch.vander(x, W_prime.shape[0], increasing = True)
-        
-        grad = torch.matmul(vander, W_prime)
+        vander = torch.vander(x, W.shape[0], increasing = True)
+
+        grad = torch.matmul(vander, W)
         #grad needs to be unsqueezed, otherwise sampler batch gradient calculations malfunction
         grad = grad.unsqueeze(dim = -1)
 
@@ -200,8 +204,9 @@ class UnivPolynomial(EnergyModel):
         W = self.params['W']
         x = x.squeeze()
 
-        vander = torch.vander(x, W.shape[0], increasing = True)
-        
+        vander = torch.vander(x, W.shape[0]+1, increasing = True)
+        vander = vander[:, 1:]
+
         return {'W': torch.sum(vander, dim = 0) / x.shape[0]}
     
 
@@ -309,12 +314,12 @@ def mvGaussian_test():
 
 def univPolynomial_test():
 
-    start_W = torch.tensor([1, 1, 1, 1, 1], dtype = torch.float32)
+    start_W = torch.tensor([1, 1, 1, 1], dtype = torch.float32)
     
     model = UnivPolynomial(start_W = start_W)
 
     x = torch.tensor(
-        [-1.32339637, -1.76975663, -1.86546622, -1.18655813, -0.09444348 ],
+        [-1, 1, 2, -2],
         dtype = torch.float32
     )
     x = x.unsqueeze(-1)

@@ -22,7 +22,7 @@ def main():
     experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'marginal_config.yaml'
+    config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
     result_name = 'results.csv'
@@ -64,7 +64,7 @@ def main():
         file_folder_path = experiment_dir,
     )
 
-    experiment.run(num_trials = 10, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 100, exporter = exporter, observers = training_observers)
 
     exporter.load_results_df()
     df = exporter.results_df.copy()
@@ -75,7 +75,10 @@ def main():
     )
     
     assessor.assign_metric('W', LpError(p = 2))
+    
     '''
+    assessor.assign_metric('mu', LpError(p = 2))
+    assessor.assign_metric('Sigma', FrobeniusError())
     assessor.assign_metric('mu_1', LpError(p = 2))
     assessor.assign_metric('Sigma_1', FrobeniusError())
     assessor.assign_metric('mu_2', LpError(p = 2))
@@ -83,21 +86,6 @@ def main():
     '''
 
     update_df = assessor.apply_param_metrics_to_df(df)
-    '''
-    comparison_columns = {
-        'Epochs': hyper_parameters['epochs'],
-        'Batch Size': hyper_parameters['batch_size'],
-        'Model Batch Size': hyper_parameters['model_batch_size'],
-        'Learning Rate': hyper_parameters['optimizer_params']['lr'],
-        'Sampler': sampling_parameters['sampler_class'],
-        'Epsilon': float(sampling_parameters['epsilon']),
-        'Likelihood': 'Marginal' if hyper_parameters['likelihood_class'] == 'Likelihood' else 'Recovery',
-        'Burnin Offset': hyper_parameters['burnin_offset'],
-    }
-
-    for col_key, value in comparison_columns.items():
-        update_df[col_key] = value
-    '''
     
     exporter.update_results(update_df)
     

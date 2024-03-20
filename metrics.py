@@ -25,7 +25,7 @@ class ParameterMetric(ABC):
 class FrobeniusError(ParameterMetric):
 
     def __init__(self):
-        self.name = 'frob_error'
+        self.name = 'Frob. Error'
 
     def __call__(self, target_matrix: torch.Tensor, model_matrix_batch: torch.Tensor):
         """
@@ -50,7 +50,7 @@ class FrobeniusError(ParameterMetric):
 class LpError(ParameterMetric):
     def __init__(self, p):
         self.p = p
-        self.name = f'L{p}_error'
+        self.name = f'L{p} Error'
 
     def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor):
 
@@ -96,7 +96,7 @@ class ParameterAssessor:
 
                 metric_evals = metric(target_param, param_estimates)
 
-                df.loc[id_mask, f'{param_name}_{metric.name}'] = metric_evals.tolist()
+                df.loc[id_mask, f'{param_name} {metric.name}'] = metric_evals.tolist()
 
         return df
 
