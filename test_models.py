@@ -191,18 +191,19 @@ class UnivPolynomial(EnergyModel):
         grad = torch.matmul(vander, W_prime)
         #grad needs to be unsqueezed, otherwise sampler batch gradient calculations malfunction
         grad = grad.unsqueeze(dim = -1)
-        
+
         return grad
     
-
+    
     def avg_param_grad(self, x: torch.Tensor):
 
         W = self.params['W']
+        x = x.squeeze()
 
         vander = torch.vander(x, W.shape[0], increasing = True)
         
-        return torch.sum(vander, dim = 0) / x.shape[0]
-
+        return {'W': torch.sum(vander, dim = 0) / x.shape[0]}
+    
 
 
 """
@@ -306,6 +307,23 @@ def mvGaussian_test():
 
 
 
+def univPolynomial_test():
+
+    start_W = torch.tensor([1, 1, 1, 1, 1], dtype = torch.float32)
+    
+    model = UnivPolynomial(start_W = start_W)
+
+    x = torch.tensor(
+        [-1.32339637, -1.76975663, -1.86546622, -1.18655813, -0.09444348 ],
+        dtype = torch.float32
+    )
+    x = x.unsqueeze(-1)
+    print("Model execution result: \n", model(x))
+    #print("Model execution result: \n", model.energy(x))
+    print("Model grad w.r.t. input: \n", model.energy_grad(x))
+    print("Model mean parameter grad: \n", model.avg_param_grad(x))
+
+
 
 
 
@@ -313,4 +331,5 @@ def mvGaussian_test():
 if __name__=="__main__":
 
     #linear_test()
-    mvGaussian_test()
+    #mvGaussian_test()
+    univPolynomial_test()

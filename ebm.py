@@ -68,7 +68,7 @@ class EnergyModel(nn.Module):
         """
         
         #Unsqueeze for if just one datapoint is passed
-        x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x
+        x = torch.unsqueeze(x, dim=1) if x.dim() == 1 else x
 
         with torch.enable_grad():
             

@@ -4,7 +4,7 @@ HyperParameters:
   epochs: 20
   burnin_offset: 50
   model_batch_size: 200
-  likelihood_class: RecoveryLikelihood
+  likelihood_class: Likelihood
   optimizer_class: Adam
   optimizer_params:
     lr: 0.01
@@ -32,7 +32,7 @@ ModelParameters:
       - 1.0
       - 1.0
       - 1.0
-  requires_adapter: true
+  requires_adapter: false
   perturbation_var:
     _target_: helper_tools.convert_to_tensor
     data: 1.0

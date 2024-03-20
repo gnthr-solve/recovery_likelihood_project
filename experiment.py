@@ -2,7 +2,9 @@
 import torch
 import json
 import hashlib
+import pandas as pd
 
+from datetime import datetime
 from ebm import EnergyModel
 from mc_samplers import EnergySampler
 from recovery_adapter import RecoveryAdapter
@@ -113,14 +115,33 @@ class Experiment:
 
     def run(self, num_trials, exporter, observers: list[Observer]):
         
+        # Get current date and time
+        current_time = datetime.now()
+
+        # Format the date and time to create a unique ID
+        experiment_id = current_time.strftime('%d%m%Y_%H%M')
+
         for i in range(num_trials):
 
             self.build_components(observers = observers)
             self.training_procedure()
 
-            observation_dfs = [
-                observer.return_observations()
-                for observer in self.training_procedure.observers
-            ]
+            observation_dfs = [observer.return_observations() for observer in self.training_procedure.observers]
+            
+            observation_df = pd.concat(objs = observation_dfs, axis = 1)
 
-            exporter.export_observations(training_run_id = f'run_{i+1}', observation_dfs = observation_dfs)
+            comparison_columns = {
+                'Epochs': self.hyper_parameters['epochs'],
+                'Batch Size': self.hyper_parameters['batch_size'],
+                'Model Batch Size': self.hyper_parameters['model_batch_size'],
+                'Learning Rate': self.hyper_parameters['optimizer_params']['lr'],
+                'Sampler': self.sampling_parameters['sampler_class'],
+                'Epsilon': float(self.sampling_parameters['epsilon']),
+                'Likelihood': 'Marginal' if self.hyper_parameters['likelihood_class'] == 'Likelihood' else 'Recovery',
+                'Burnin Offset': self.hyper_parameters['burnin_offset'],
+            }
+
+            for col_key, value in comparison_columns.items():
+                observation_df[col_key] = value
+
+            exporter.export_observations(training_run_id = experiment_id + f'_run_{i+1}', observation_df = observation_df)

@@ -35,6 +35,7 @@ dist = UnivPolynomial()
 urng = np.random.default_rng()
 rng = NumericalInversePolynomial(dist, random_state=urng)
 poly_dataset = rng.rvs(10000)
+print(poly_dataset[:10])
 '''
 x = np.linspace(rvs.min()-0.1, rvs.max()+0.1, num=10000)
 fx = dist.pdf(x)

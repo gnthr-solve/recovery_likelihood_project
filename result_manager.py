@@ -17,11 +17,11 @@ class ResultManager:
         self.file_path = file_folder_path.joinpath(file_name)
         
 
-    def export_observations(self, training_run_id: str, observation_dfs: list[pd.DataFrame]):
+    def export_observations(self, training_run_id: str, observation_df: pd.DataFrame):
 
         self.load_results_df()
 
-        new_results_df = pd.concat(observation_dfs, axis=1)
+        new_results_df = observation_df
         new_results_df['training_run_id'] = training_run_id
         new_results_df['iteration'] = range(1, len(new_results_df)+1)
 

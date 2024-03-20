@@ -20,7 +20,7 @@ experiment_name = 'POLY_RL_ML'
 experiment_dir = result_directory / experiment_name
 experiment_dir.mkdir(parents=True, exist_ok=True)  # Create parent directories if needed
 
-config_name = 'recovery_config.yaml'
+config_name = 'marginal_config.yaml'
 config_path = experiment_dir.joinpath(config_name)
 print(config_path)
 
@@ -34,7 +34,7 @@ target_params = {
 }
 
 start_params = {
-    'start_W': torch.tensor([1, 1, 1, 1, 1], dtype = torch.float32),
+    'start_W': torch.tensor([0, 1, 1, 1, 1], dtype = torch.float32),
 }
 
 perturbation_var = torch.tensor(1, dtype = torch.float32)
@@ -56,7 +56,7 @@ ATTENTION:
 For recovery likelihood the number of MC chains is fixed to the batch_size. 
 Thus the model_batch_size MUST be an integer multiple of the batch_size to avoid an error. 
 """
-experiment_likelihood_class = 'RecoveryLikelihood'
+experiment_likelihood_class = 'Likelihood'
 
 hyper_params = HyperParameters(
     batch_size = 200,
@@ -111,7 +111,7 @@ from dataset_gen import poly_dataset
 dataset = torch.tensor(poly_dataset, dtype = torch.float32)
 dataset_name = 'dataset.pt'
 dataset_path = experiment_dir.joinpath(dataset_name)
-torch.save(obj = dataset, f = dataset_path)
+#torch.save(obj = dataset, f = dataset_path)
 
 
 ### Sampler Start Batch. IMPORTANT: For recovery likelihood batch_size and sampler_start_batch.shape[0] must coincide ###
@@ -119,4 +119,4 @@ sampler_start_batch = torch.zeros(size = (200,1))
 
 start_batch_name = 'start_batch.pt'
 start_batch_path = experiment_dir.joinpath(start_batch_name)
-torch.save(obj = sampler_start_batch, f = start_batch_path)
+#torch.save(obj = sampler_start_batch, f = start_batch_path)
