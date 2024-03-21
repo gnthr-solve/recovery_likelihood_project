@@ -283,7 +283,7 @@ if __name__=="__main__":
     }
     
 
-    plot_dict = {(0,0): HistogramPlot(results_df=results_df, column_to_plot=data_columns[1], bins=20)}
+    #plot_dict = {(0,0): HistogramPlot(results_df=results_df, column_to_plot=data_columns[1], bins=20)}
 
     plotter = PlotMatrix(
        #title='Gaussian Mixture Model',
