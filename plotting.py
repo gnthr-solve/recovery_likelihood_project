@@ -18,6 +18,8 @@ from matplotlib.figure import Figure
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 
+from helper_tools import remove_duplicate_plot_descriptors
+
 """
 Plot Component Base Class
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -74,23 +76,32 @@ class PlotMatrix:
         get_title = np.vectorize(lambda ax: ax.get_title())
         get_xlabel = np.vectorize(lambda ax: ax.get_xlabel())
         get_ylabel = np.vectorize(lambda ax: ax.get_ylabel())
-        
+
         # Extract titles, xlabels, and ylabels using vectorized operations
         titles = get_title(self.axes)
         xlabels = get_xlabel(self.axes)
         ylabels = get_ylabel(self.axes)
 
-        plt.tight_layout()  # Adjust layout after potential label hiding
+        titles = remove_duplicate_plot_descriptors(titles, axis = 1, inverse = False)
+        xlabels = remove_duplicate_plot_descriptors(xlabels, axis = 1, inverse = True)
+        ylabels = remove_duplicate_plot_descriptors(ylabels, axis = 0, inverse = False)
+
+        for (i,j), ax in np.ndenumerate(self.axes):
+            ax.set_title(titles[i,j])
+            ax.set_xlabel(xlabels[i,j])
+            ax.set_ylabel(ylabels[i,j])
+
+        plt.tight_layout()
 
 
-    def draw(self):
+    def draw(self, fontsize: int = 9):
 
         self.setup_fig()
 
         for (row, col), plot in self.plots.items():
             #print(row, col, plot)
             ax = self.axes[row, col]  
-            plot.draw(ax)
+            plot.draw(ax, fontsize)
         
         #.get_current_fig_manager().set_window_title()
         #.subplots_adjust(wspace=0.4)
@@ -98,6 +109,8 @@ class PlotMatrix:
 
         #self.fig.align_xlabels(self.axes)
         #self.fig.align_ylabels(self.axes)
+
+        self.adjust_titles_and_labels()
 
         if self.save:
             filename = self.title.lower().replace(" ", "_")
@@ -113,24 +126,25 @@ Concrete Plot Components - To be inserted in Plot Matrix
 """
 class TimeSeriesPlot(PlotComponent):
   
-  def __init__(self, results_df: pd.DataFrame, plot_index: str, column_to_plot: str):
+  def __init__(self, results_df: pd.DataFrame, plot_index: str, column_to_plot: str, title: str = None):
     
     self.results_df = results_df
     self.column_to_plot = column_to_plot
     self.plot_index = plot_index
+    self.title = title
 
 
-  def draw(self, ax: Axes):
+  def draw(self, ax: Axes, fontsize: int):
 
     for run_id, data in results_df.groupby('training_run_id'):
 
         ax.plot(data[self.plot_index], data[self.column_to_plot], label=f"{run_id}")
 
-    ax.set_xlabel(self.plot_index, fontsize = 10)
-    ax.set_ylabel(self.column_to_plot, fontsize = 10)
+    ax.set_xlabel(self.plot_index, fontsize = fontsize)
+    ax.set_ylabel(self.column_to_plot, fontsize = fontsize)
     ax.grid(True)
     #ax.tick_params(labelsize=10)
-    #ax.set_title()
+    ax.set_title(self.title)
     
 
 
@@ -149,7 +163,7 @@ class ProcessPlot(PlotComponent):
         self.std_values = self.results_df.groupby('iteration')[self.column_to_plot].std()
 
 
-    def draw(self, ax: Axes):
+    def draw(self, ax: Axes, fontsize: int):
     
         ax.plot(
             self.mean_values.index, 
@@ -168,8 +182,8 @@ class ProcessPlot(PlotComponent):
             label="± Standard Deviation"
         )
 
-        ax.set_xlabel("Iteration", fontsize = 10)
-        ax.set_ylabel(self.column_to_plot, fontsize = 10)
+        ax.set_xlabel("Iteration", fontsize = fontsize)
+        ax.set_ylabel(self.column_to_plot, fontsize = fontsize)
         ax.grid(True)
         #plt.legend()
         #ax.tick_params(axis = 'y', labelsize=10)
@@ -188,7 +202,7 @@ class HistogramPlot(PlotComponent):
         self.bins = bins
         self.title = title
 
-    def draw(self, ax: Axes):
+    def draw(self, ax: Axes, fontsize: int):
 
         error_samples = [
             data[self.column_to_plot].iloc[-1]
@@ -200,8 +214,8 @@ class HistogramPlot(PlotComponent):
             bins = self.bins,
             density = True,
         )
-        ax.set_xlabel('Parameter Error', fontsize = 10)
-        ax.set_ylabel('Frequency', fontsize = 10)
+        ax.set_xlabel('Parameter Error', fontsize = fontsize)
+        ax.set_ylabel('Frequency', fontsize = fontsize)
         ax.grid(True)
         #ax.tick_params(labelsize=10)
         ax.set_title(self.title)
@@ -210,13 +224,15 @@ class HistogramPlot(PlotComponent):
 
 class StackedHistogramPlot(PlotComponent):
   
-    def __init__(self, results_df_dict: dict[str, pd.DataFrame], column_to_plot: str):
+    def __init__(self, results_df_dict: dict[str, pd.DataFrame], column_to_plot: str, bins: int, title: str = None):
         
         self.results_df_dict = results_df_dict
         self.column_to_plot = column_to_plot
+        self.bins = bins
+        self.title = title
 
 
-    def draw(self, ax: Axes):
+    def draw(self, ax: Axes, fontsize: int):
 
         error_sample_dict = { 
             name: [
@@ -228,64 +244,36 @@ class StackedHistogramPlot(PlotComponent):
 
         for name, error_samples in error_sample_dict.items():
             ax.hist(
-                x = error_samples, 
+                x = error_samples,
+                bins = self.bins,
                 density = True,
                 label = name,
+                alpha = 0.6
             )
 
-        ax.set_xlabel('Parameter Error', fontsize = 10)
-        ax.set_ylabel('Frequency', fontsize = 10)
+        ax.set_xlabel('Parameter Error', fontsize = fontsize)
+        ax.set_ylabel('Frequency', fontsize = fontsize)
         ax.grid(True)
         #ax.tick_params(labelsize=10)
-        ax.set_title(f'{self.column_to_plot}')
+        ax.set_title(self.title)
 
 
 
-"""
-Plotting Preparation
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
 
-def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str, filter_cols: dict = None)->dict[str, pd.DataFrame]:
-    """
-        Filters a DataFrame and splits it based on unique values in a comparison column.
-        
-        Args:
-        - df: Pandas DataFrame
-        - comparison_column: Name of the column to use for splitting
-        - filter_cols: Dictionary of column, value pairs to filter before splitting
-        
-        Returns:
-        - Dictionary where keys are unique values in comparison column and values are corresponding DataFrame subsets
-    """
-    split_dict = {}
-
-    # Filter the dataframe by comparison columns having specific value like sampler = MALASampler
-    if filter_cols:
-        for col, val in filter_cols.items():
-            filter_mask = result_df[col] == val
-            result_df = result_df.loc[filter_mask]
-    
-    unique_col_values = result_df[comparison_column].unique()
-    matching_mask = lambda value: result_df[comparison_column] == value
-
-    for col_value in unique_col_values:
-        entry_name = comparison_column + f': {col_value}'
-        split_dict[entry_name] = result_df.loc[matching_mask(col_value)].copy()
-    
-    return split_dict
 
 
 
 
 if __name__=="__main__":
 
+    from helper_tools import prepare_sub_dfs
+
     ### Set Paths ###-------------------------------------------------------
     result_directory = Path('./Experiment_Results')
     experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    result_name = 'results.csv'
+    result_name = 'results_15.csv'
 
     result_file_path = experiment_dir.joinpath(result_name)
 
@@ -331,7 +319,8 @@ if __name__=="__main__":
         (0,0): HistogramPlot(results_df= sub_result_dfs['Likelihood: Marginal'], column_to_plot=data_columns[1], bins=20, title = 'Marginal'),
         (0,1): HistogramPlot(results_df= sub_result_dfs['Likelihood: Recovery'], column_to_plot=data_columns[1], bins=20, title = 'Recovery'),
     }
-    #plot_dict = {(0,0): HistogramPlot(results_df=results_df, column_to_plot=data_columns[1], bins=20)}
+    
+    stacked_hist_plot_dict = {(0,0): StackedHistogramPlot(results_df_dict = sub_result_dfs, column_to_plot=data_columns[1], bins=20)}
 
     ### Create Plot ###-------------------------------------------------------
     plotter = PlotMatrix(
@@ -340,5 +329,9 @@ if __name__=="__main__":
        sharex = 'col',
        sharey = 'row',
     )
-    plotter.add_plot_dict(plot_dict = process_plot_dict)
-    plotter.draw()
+    plotter.add_plot_dict(plot_dict = stacked_hist_plot_dict)
+    
+    plotter.draw(fontsize=10)
+    #plotter.draw(fontsize=10)
+    #plotter.draw(fontsize=9)
+    #plotter.draw(fontsize=8)

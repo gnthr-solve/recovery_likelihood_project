@@ -22,10 +22,10 @@ def main():
     experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'recovery_config.yaml'
+    config_name = 'marginal_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'results.csv'
+    result_name = 'results_15.csv'
 
     print(experiment_dir)
     ### Load from directory ###
@@ -64,7 +64,7 @@ def main():
         file_folder_path = experiment_dir,
     )
 
-    experiment.run(num_trials = 30, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 50, exporter = exporter, observers = training_observers)
 
     ### Update with Metrics ###
     exporter.load_results_df()

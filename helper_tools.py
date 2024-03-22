@@ -116,6 +116,7 @@ def convert_to_tensor(data):
     return torch.tensor(data=data, dtype= torch.float32)
 
 
+
 """
 Pandas to torch
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -131,6 +132,80 @@ def param_record_to_torch(param_column):
     params_tensor = torch.tensor(params_array, dtype= torch.float32)
     
     return params_tensor
+
+
+
+"""
+Plotting Helper Functions
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str, filter_cols: dict = None)->dict[str, pd.DataFrame]:
+    """
+        Filters a DataFrame and splits it based on unique values in a comparison column.
+        
+        Args:
+        - df: Pandas DataFrame
+        - comparison_column: Name of the column to use for splitting
+        - filter_cols: Dictionary of column, value pairs to filter before splitting
+        
+        Returns:
+        - Dictionary where keys are unique values in comparison column and values are corresponding DataFrame subsets
+    """
+    split_dict = {}
+
+    # Filter the dataframe by comparison columns having specific value like sampler = MALASampler
+    if filter_cols:
+        for col, val in filter_cols.items():
+            filter_mask = result_df[col] == val
+            result_df = result_df.loc[filter_mask]
+    
+    unique_col_values = result_df[comparison_column].unique()
+    matching_mask = lambda value: result_df[comparison_column] == value
+
+    for col_value in unique_col_values:
+        entry_name = comparison_column + f': {col_value}'
+        split_dict[entry_name] = result_df.loc[matching_mask(col_value)].copy()
+    
+    return split_dict
+
+
+
+def remove_duplicate_plot_descriptors(array: np.ndarray, axis: int, inverse: bool):
+
+    shape = array.shape
+    axis_iter = [
+        array[k,:] if axis == 0 else array[:, k]
+        for k in range(shape[axis])
+    ]
+
+    for k, slice in enumerate(axis_iter):
+
+        if inverse:
+            mask_slice = slice[::-1]
+        else:
+            mask_slice = slice
+        
+        _, unique_slice_inds = np.unique(mask_slice, return_index = True)
+        
+        mask = np.zeros_like(slice, dtype=bool)
+        mask[unique_slice_inds] = True
+
+        if inverse:
+            slice = np.where(mask[::-1], slice, '')
+        else:
+            slice = np.where(mask, slice, '')
+
+        if axis == 0:
+            array[k, :] = slice
+        else:
+            array[:, k] = slice
+        
+    return array
+        
+
+
+
 
 
 

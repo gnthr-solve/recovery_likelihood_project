@@ -7,7 +7,7 @@ HyperParameters:
   likelihood_class: Likelihood
   optimizer_class: Adam
   optimizer_params:
-    lr: 0.1
+    lr: 0.2
   scheduler_class: null
   scheduler_params:
     gamma: 0.9
