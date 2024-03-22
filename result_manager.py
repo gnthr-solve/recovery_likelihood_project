@@ -31,16 +31,13 @@ class ResultManager:
         self.results_df.to_csv(self.file_path, index = False)
 
     
-    def update_results(self, update_df: pd.DataFrame):
-
-        self.load_results_df()
+    def update_by_replacement(self, update_df: pd.DataFrame):
+        """
+        Assumes that update_df is a copy of current results_df with extra metric column.
+        This is a primitive solution, essentially calculating all the metrics again.
+        """
         
-        extra_columns = [col for col in update_df.columns if col not in self.results_df.columns]
-        merge_df = update_df[['training_run_id', 'iteration', *extra_columns]]
-
-        self.results_df = self.results_df.merge(merge_df, how='left', on=['training_run_id', 'iteration'])
-        
-        self.results_df.to_csv(self.file_path, index = False)
+        update_df.to_csv(self.file_path, index = False)
 
     
     def load_results_df(self):
@@ -53,3 +50,17 @@ class ResultManager:
             self.results_df = pd.DataFrame(columns = ['training_run_id'])
 
 
+
+
+'''
+def update_results(self, update_df: pd.DataFrame):
+
+        self.load_results_df()
+        
+        extra_columns = [col for col in update_df.columns if col not in self.results_df.columns]
+        merge_df = update_df[['training_run_id', 'iteration', *extra_columns]]
+
+        self.results_df = self.results_df.merge(merge_df, how='left', on=['training_run_id', 'iteration'])
+        
+        self.results_df.to_csv(self.file_path, index = False)
+'''

@@ -236,27 +236,6 @@ class SimpleLinear(EnergyModel):
 
 
 
-"""
-Simple Linear Model
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-class VisibleBoltzmann(EnergyModel):
-
-    def __init__(self, W_0: torch.Tensor):
-        super().__init__()
-        self.params['W'] = W_0.clone()
-
-    
-    def energy(self, x: torch.Tensor):
-
-        W = self.params['W']
-
-        x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
-
-        result = quadratic_form_batch(x, W)
-
-        return result/2
-
 
 
 

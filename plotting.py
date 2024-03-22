@@ -40,20 +40,13 @@ Plot Matrix
 
 class PlotMatrix:
 
-    def __init__(self, title: str, sharex: str|bool = False, save: bool = False ):
+    def __init__(self, title: str, sharex: str|bool = False, sharey: str|bool = False, save: bool = False ):
         
         self.plots = {}
         self.title = title
         self.sharex = sharex
+        self.sharey = sharey
         self.save = save
-
-
-    def add_plot(self, row, col, plot: PlotComponent):
-
-        if not isinstance(plot, PlotComponent):
-            raise TypeError("Plot must be a PlotComponent subclass")
-        
-        self.plots[(row, col)] = plot
 
     
     def add_plot_dict(self, plot_dict: dict[tuple, PlotComponent]):
@@ -69,9 +62,25 @@ class PlotMatrix:
         self.fig, self.axes = plt.subplots(
            rows, 
            cols, 
-           sharex = self.sharex, 
+           sharex = self.sharex,
+           sharey = self.sharey, 
            squeeze = False,
         )
+
+
+    def adjust_titles_and_labels(self):
+        
+        # Define functions to extract titles, xlabels, and ylabels from axes objects
+        get_title = np.vectorize(lambda ax: ax.get_title())
+        get_xlabel = np.vectorize(lambda ax: ax.get_xlabel())
+        get_ylabel = np.vectorize(lambda ax: ax.get_ylabel())
+        
+        # Extract titles, xlabels, and ylabels using vectorized operations
+        titles = get_title(self.axes)
+        xlabels = get_xlabel(self.axes)
+        ylabels = get_ylabel(self.axes)
+
+        plt.tight_layout()  # Adjust layout after potential label hiding
 
 
     def draw(self):
@@ -86,7 +95,10 @@ class PlotMatrix:
         #.get_current_fig_manager().set_window_title()
         #.subplots_adjust(wspace=0.4)
         self.fig.suptitle(self.title)
-        
+
+        #self.fig.align_xlabels(self.axes)
+        #self.fig.align_ylabels(self.axes)
+
         if self.save:
             filename = self.title.lower().replace(" ", "_")
             plt.savefig(f'Figures/{filename}')
@@ -119,15 +131,17 @@ class TimeSeriesPlot(PlotComponent):
     ax.grid(True)
     #ax.tick_params(labelsize=10)
     #ax.set_title()
+    
 
 
 
 class ProcessPlot(PlotComponent):
   
-    def __init__(self, results_df: pd.DataFrame, column_to_plot: str):
+    def __init__(self, results_df: pd.DataFrame, column_to_plot: str, title: str = None):
     
         self.results_df = results_df
         self.column_to_plot = column_to_plot
+        self.title = title
         self.prepare_data()
 
     def prepare_data(self):
@@ -159,26 +173,28 @@ class ProcessPlot(PlotComponent):
         ax.grid(True)
         #plt.legend()
         #ax.tick_params(axis = 'y', labelsize=10)
-        #ax.set_title()
+        if self.title:
+            ax.set_title(self.title)
         #ax.yaxis.label.set_color(color)
 
 
 
 class HistogramPlot(PlotComponent):
   
-    def __init__(self, results_df: pd.DataFrame, column_to_plot: str, bins: int):
+    def __init__(self, results_df: pd.DataFrame, column_to_plot: str, bins: int, title: str = None):
     
         self.results_df = results_df
         self.column_to_plot = column_to_plot
         self.bins = bins
-
+        self.title = title
 
     def draw(self, ax: Axes):
 
         error_samples = [
             data[self.column_to_plot].iloc[-1]
-            for run_id, data in results_df.groupby('training_run_id')
+            for run_id, data in self.results_df.groupby('training_run_id')
         ]
+        
         ax.hist(
             x = error_samples,
             bins = self.bins,
@@ -188,7 +204,7 @@ class HistogramPlot(PlotComponent):
         ax.set_ylabel('Frequency', fontsize = 10)
         ax.grid(True)
         #ax.tick_params(labelsize=10)
-        ax.set_title(f'{self.column_to_plot}')
+        ax.set_title(self.title)
 
 
 
@@ -230,18 +246,25 @@ Plotting Preparation
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str)->dict[str, pd.DataFrame]:
+def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str, filter_cols: dict = None)->dict[str, pd.DataFrame]:
     """
-        Split a DataFrame based on unique values in a comparison column.
+        Filters a DataFrame and splits it based on unique values in a comparison column.
         
         Args:
         - df: Pandas DataFrame
         - comparison_column: Name of the column to use for splitting
+        - filter_cols: Dictionary of column, value pairs to filter before splitting
         
         Returns:
         - Dictionary where keys are unique values in comparison column and values are corresponding DataFrame subsets
     """
     split_dict = {}
+
+    # Filter the dataframe by comparison columns having specific value like sampler = MALASampler
+    if filter_cols:
+        for col, val in filter_cols.items():
+            filter_mask = result_df[col] == val
+            result_df = result_df.loc[filter_mask]
     
     unique_col_values = result_df[comparison_column].unique()
     matching_mask = lambda value: result_df[comparison_column] == value
@@ -256,7 +279,8 @@ def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str)->dict[str, 
 
 
 if __name__=="__main__":
-    ### Set Paths ###
+
+    ### Set Paths ###-------------------------------------------------------
     result_directory = Path('./Experiment_Results')
     experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
@@ -267,12 +291,24 @@ if __name__=="__main__":
 
     results_df = pd.read_csv(result_file_path)
 
-
-    data_columns = ['Likelihood Values', 'W L2-Error', 'mu_1_L2_error', 'Sigma_1_frob_error', 'mu_2_L2_error', 'Sigma_2_frob_error']
+    ### Select Columns ###-------------------------------------------------------
+    data_columns = ['Unnorm. Likelihood Values', 'W L2-Error', 'mu_1_L2_error', 'Sigma_1_frob_error', 'mu_2_L2_error', 'Sigma_2_frob_error']
 
     plot_index = 'Iteration Timestamp'
     #column_to_plot = 'mu_L2_error'
 
+
+    ### Split dataframe ###-------------------------------------------------------
+    sub_result_dfs = prepare_sub_dfs(
+        result_df = results_df,
+        comparison_column = 'Likelihood',
+        filter_cols = None,
+    )
+    #for name, sub_df in sub_result_dfs.items():
+    #    print(name)
+    #    print(sub_df[-10:])
+
+    ### Create Plot Dict ###-------------------------------------------------------
     ''''''
     plot_dict = {
         (i, j): TimeSeriesPlot(results_df, plot_index, column_to_plot)
@@ -283,12 +319,26 @@ if __name__=="__main__":
     }
     
 
+    process_plot_dict = {
+        (i, j): ProcessPlot(results_df = sub_result_dfs['Likelihood: Marginal'], column_to_plot = column_to_plot, title='Marginal')
+        if j == 0 
+        else ProcessPlot(results_df = sub_result_dfs['Likelihood: Recovery'], column_to_plot = column_to_plot, title='Recovery')
+        for i, column_to_plot in enumerate(data_columns[:2])
+        for j in range(2)
+    }
+
+    hist_plot_dict = {
+        (0,0): HistogramPlot(results_df= sub_result_dfs['Likelihood: Marginal'], column_to_plot=data_columns[1], bins=20, title = 'Marginal'),
+        (0,1): HistogramPlot(results_df= sub_result_dfs['Likelihood: Recovery'], column_to_plot=data_columns[1], bins=20, title = 'Recovery'),
+    }
     #plot_dict = {(0,0): HistogramPlot(results_df=results_df, column_to_plot=data_columns[1], bins=20)}
 
+    ### Create Plot ###-------------------------------------------------------
     plotter = PlotMatrix(
        #title='Gaussian Mixture Model',
        title='UnivariatePolynomial', 
-       #sharex = 'col'
+       sharex = 'col',
+       sharey = 'row',
     )
-    plotter.add_plot_dict(plot_dict=plot_dict)
+    plotter.add_plot_dict(plot_dict = process_plot_dict)
     plotter.draw()

@@ -130,7 +130,7 @@ class LikelihoodObserver(Observer):
         self.likelihood_values = []
 
         if as_df:
-            return pd.DataFrame({'Likelihood Values': likelihood_values})
+            return pd.DataFrame({'Unnorm. Likelihood Values': likelihood_values})
         else:
             return likelihood_values 
 

@@ -50,7 +50,7 @@ class FrobeniusError(ParameterMetric):
 class LpError(ParameterMetric):
     def __init__(self, p):
         self.p = p
-        self.name = f'L{p} Error'
+        self.name = f'L{p}-Error'
 
     def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor):
 

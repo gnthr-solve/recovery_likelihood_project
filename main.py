@@ -64,8 +64,9 @@ def main():
         file_folder_path = experiment_dir,
     )
 
-    experiment.run(num_trials = 100, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 30, exporter = exporter, observers = training_observers)
 
+    ### Update with Metrics ###
     exporter.load_results_df()
     df = exporter.results_df.copy()
     #print(df.info())
@@ -87,10 +88,14 @@ def main():
 
     update_df = assessor.apply_param_metrics_to_df(df)
     
-    exporter.update_results(update_df)
+    exporter.update_by_replacement(update_df)
+    #exporter.update_results(update_df)
     
 
     
+
+
+
 
 def gaussian_test_ML():
 
