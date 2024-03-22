@@ -212,7 +212,7 @@ class HistogramPlot(PlotComponent):
         ax.hist(
             x = error_samples,
             bins = self.bins,
-            density = True,
+            #density = True,
         )
         ax.set_xlabel('Parameter Error', fontsize = fontsize)
         ax.set_ylabel('Frequency', fontsize = fontsize)
@@ -273,7 +273,7 @@ if __name__=="__main__":
     experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    result_name = 'results_15.csv'
+    result_name = 'results.csv'
 
     result_file_path = experiment_dir.joinpath(result_name)
 
@@ -287,10 +287,14 @@ if __name__=="__main__":
 
 
     ### Split dataframe ###-------------------------------------------------------
+    filter_cols = {
+        'Sampler': 'ULASampler'
+    }
     sub_result_dfs = prepare_sub_dfs(
         result_df = results_df,
         comparison_column = 'Likelihood',
-        filter_cols = None,
+        filter_cols = filter_cols,
+        #filter_cols = None,
     )
     #for name, sub_df in sub_result_dfs.items():
     #    print(name)
@@ -329,7 +333,7 @@ if __name__=="__main__":
        sharex = 'col',
        sharey = 'row',
     )
-    plotter.add_plot_dict(plot_dict = stacked_hist_plot_dict)
+    plotter.add_plot_dict(plot_dict = hist_plot_dict)
     
     plotter.draw(fontsize=10)
     #plotter.draw(fontsize=10)

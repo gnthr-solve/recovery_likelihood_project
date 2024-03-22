@@ -171,6 +171,42 @@ def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str, filter_cols
 
 
 
+def prepare_sub_dfs_alt(result_df: pd.DataFrame, comparison_columns: list[str], filter_cols: dict = None) -> dict[str, pd.DataFrame]:
+    """
+    Filters a DataFrame and splits it based on unique value combinations in a list of comparison columns.
+
+    Args:
+        result_df: Pandas DataFrame.
+        comparison_columns: List of column names to use for splitting (combined values as keys).
+        filter_cols: Dictionary of column, value pairs to filter before splitting (optional).
+
+    Returns:
+        A dictionary where keys are unique combinations of values from the comparison columns,
+        and values are corresponding DataFrame subsets.
+    """
+    split_dict = {}
+
+    # Filter the dataframe based on filter_cols if provided
+    if filter_cols:
+        for col, val in filter_cols.items():
+            filter_mask = result_df[col] == val
+            result_df = result_df.loc[filter_mask]
+
+    # Get all unique combinations of values from the comparison columns
+    unique_combos = result_df[comparison_columns].drop_duplicates()
+    print(unique_combos)
+
+    for index, row_value in unique_combos.iterrows():
+        
+        entry_name = ", ".join([f"{col}: {val}" for col, val in zip(comparison_columns, row_value)])
+        
+        matching_mask = (result_df[comparison_columns] == row_value).all(axis=1)
+        split_dict[entry_name] = result_df.loc[matching_mask].copy()
+
+    return split_dict
+
+
+
 def remove_duplicate_plot_descriptors(array: np.ndarray, axis: int, inverse: bool):
 
     shape = array.shape
