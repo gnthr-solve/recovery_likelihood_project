@@ -7,7 +7,9 @@ from abc import ABC, abstractmethod
 
 from helper_tools import param_record_to_torch
 
-
+#torch.any(curr_state_batch.isnan() | curr_state_batch.isinf()).data
+#bool(torch.any(curr_state_batch.isnan()))
+#bool(torch.any(curr_state_batch.isinf()))
 """
 Parameter Error Metrics
 -------------------------------------------------------------------------------------------------------------------------------------------

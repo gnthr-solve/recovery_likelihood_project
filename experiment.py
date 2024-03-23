@@ -138,6 +138,7 @@ class Experiment:
                 'Sampler': self.sampling_parameters['sampler_class'],
                 'Epsilon': float(self.sampling_parameters['epsilon']),
                 'Likelihood': 'Marginal' if self.hyper_parameters['likelihood_class'] == 'Likelihood' else 'Recovery',
+                'Perturbation Variance': float(self.model_parameters['perturbation_var']),
                 'Burnin Offset': self.hyper_parameters['burnin_offset'],
                 'Scheduler': self.hyper_parameters['scheduler_class'],
             }

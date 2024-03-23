@@ -4,6 +4,7 @@ import torch.linalg as tla
 
 from ebm import EnergyModel
 from helper_tools import quadratic_form_batch, check_nan
+from timing_decorators import timing_decorator
 
 """
 Concrete Energy Models for Experiments.
@@ -13,7 +14,7 @@ They define the parameters to be trained in the __init__ and implement the energ
 In those cases where the gradient of the energy is analytically available, like in the MultivariateGaussianModel,
 the models can override the energy_grad method.
 Overriding the avg_param_grad method is also possible, but as this method normally computes the average gradients of a batch,
-
+one has to keep that extra detail in mind.
 """
 
 
@@ -95,7 +96,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         self.Sigma_inv = (lambda Sigma: torch.inverse(Sigma))
         self.dim = start_mu_1.shape[-1]
 
-
+    @timing_decorator
     def kernel(self, x: torch.Tensor):
 
         # x can be of shape (d,) or (n, d)
@@ -113,6 +114,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         return kernel_value
     
 
+    @timing_decorator
     def component_kernel(self, x: torch.Tensor, component: int):
 
         # Reshape mu and Sigma_inv to support broadcasting
@@ -138,6 +140,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         return energy
     
 
+    @timing_decorator
     def norm_const(self):
         
         Z_1 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_1']))
@@ -209,6 +212,40 @@ class UnivPolynomial(EnergyModel):
 
         return {'W': torch.sum(vander, dim = 0) / x.shape[0]}
     
+
+
+"""
+Moderated Cosine
+-------------------------------------------------------------------------------------------------------------------------------------------
+Becomes more multimodal the larger W_cos gets.
+"""
+
+class ModeratedCosine(EnergyModel):
+
+    def __init__(self, W_cos: torch.Tensor, mu: torch.Tensor):
+        
+        self.params = {
+            'W_cos': W_cos.clone(),
+            'mu': mu.clone(),
+        }
+
+
+    def energy(self, x: torch.Tensor):
+
+        W_cos = self.params['W_cos']
+        mu = self.params['mu']
+
+        #Make x a tensor with dim = 2, if mu is scalar and x a batch the x values need to be stacked.
+        x = torch.atleast_1d(x)
+        x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
+
+        diff = x - mu
+
+        cos_term = W_cos * torch.cos(diff)
+        log_norm_term = torch.log(torch.norm(diff, p = 2, dim = 1)**2 + 1)
+
+        return cos_term + log_norm_term
+
 
 
 """

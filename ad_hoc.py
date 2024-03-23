@@ -17,7 +17,7 @@ print("-device:", device)
 
 ### Set Paths ###-------------------------------------------------------
 result_directory = Path('./Experiment_Results')
-experiment_name = 'POLY_RL_ML'
+experiment_name = 'GMM_RL_ML'
 experiment_dir = result_directory / experiment_name
 
 result_name = 'results.csv'
@@ -26,7 +26,8 @@ result_file_path = experiment_dir.joinpath(result_name)
 
 results_df = pd.read_csv(result_file_path)
 
-results_df.drop(results_df[results_df['Sampler'] == 'ULASampler'].index, inplace=True)
+results_df.drop(results_df[results_df['Likelihood'] == 'Recovery'].index, inplace=True)
+#results_df['Perturbation Variance'] = 1.0
 
-print(len(results_df))
+#print(len(results_df))
 results_df.to_csv(result_file_path, index = False)

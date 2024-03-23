@@ -20,7 +20,7 @@ experiment_name = 'GMM_RL_ML'
 experiment_dir = result_directory / experiment_name
 experiment_dir.mkdir(parents=True, exist_ok=True)  # Create parent directories if needed
 
-config_name = 'recovery_config.yaml'
+config_name = 'marginal_config.yaml'
 config_path = experiment_dir.joinpath(config_name)
 print(config_path)
 
@@ -53,7 +53,7 @@ perturbation_var = torch.tensor(1, dtype = torch.float32)
 
 
 ### Sampler ###
-epsilon = torch.tensor(1e-1, dtype = torch.float32)
+epsilon = torch.tensor(1e-2, dtype = torch.float32)
 M = torch.eye(n = 2)
 
 """
@@ -68,17 +68,20 @@ ATTENTION:
 For recovery likelihood the number of MC chains is fixed to the batch_size. 
 Thus the model_batch_size MUST be an integer multiple of the batch_size to avoid an error. 
 """
-experiment_likelihood_class = 'RecoveryLikelihood'
+experiment_likelihood_class = 'Likelihood'
+batch_size = 200
+learning_rate = 2e-1
+print('De-facto lr: ', learning_rate/batch_size)
 
 hyper_params = HyperParameters(
-    batch_size = 200,
-    epochs = 20,
-    burnin_offset = 50,
+    batch_size = batch_size,
+    epochs = 10,
+    burnin_offset = 100,
     model_batch_size = 200,
     likelihood_class = experiment_likelihood_class,
     optimizer_class = 'Adam',
     optimizer_params = {
-        'lr': 1e-2,
+        'lr': learning_rate,
     },
     #scheduler_class = 'ExponentialLR',
     scheduler_params = {
@@ -87,7 +90,7 @@ hyper_params = HyperParameters(
 )
 
 sampling_params = SamplingParameters(
-    sampler_class = 'MALASampler',
+    sampler_class = 'ULASampler',
     epsilon = epsilon,
     L = 3,
     M = M,
@@ -143,7 +146,7 @@ dataset = concatenated_dataset[shuffled_indices]
 
 dataset_name = 'dataset.pt'
 dataset_path = experiment_dir.joinpath(dataset_name)
-torch.save(obj = dataset, f = dataset_path)
+#torch.save(obj = dataset, f = dataset_path)
 
 
 ### Sampler Start Batch. IMPORTANT: For recovery likelihood batch_size and sampler_start_batch.shape[0] must coincide ###

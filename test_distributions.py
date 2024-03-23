@@ -216,42 +216,47 @@ Univariate Polynomial Distribution
 """
 class UnivPolynomial(EnergyDistribution):
 
-    def __init__(self, W_0: torch.Tensor):
+    def __init__(self, W: torch.Tensor):
         """
         Univariate Polynomial Energy
         Weight associated powers are interpreted like their index i.e. W[i] -> W[i] * x**i
         """
         self.params = {}
-        self.params['W'] = W_0.clone()
+        self.params['W'] = W.clone()
 
     
     def energy(self, x: torch.Tensor):
 
         W = self.params['W']
+        #Squeeze necessary to allow sampler batches of shape (n, 1)
         x = torch.atleast_1d(x).squeeze()
-        
+
         # Use torchs method to create a matching Vandermonde Matrix
-        vander = torch.vander(x, W.shape[0], increasing = True)
+        vander = torch.vander(x, W.shape[0] + 1, increasing = True)
         
+        #remove 0 coefficient
+        vander = vander[:, 1:]
+
         result = torch.matmul(vander, W)
-        
+
         return result
     
 
-    @enable_grad_decorator
     def energy_grad(self, x: torch.Tensor):
         
-        W_prime = self.params['W'][1:]
+        W = self.params['W']
+        #Squeeze necessary to allow sampler batches of shape (n, 1)
         x = torch.atleast_1d(x).squeeze()
-        
-        coeff = torch.arange(W_prime.shape[0], dtype=x.dtype) + 1
-        W_prime = W_prime * coeff
 
-        vander = torch.vander(x, W_prime.shape[0], increasing = True)
-        
-        grad = torch.matmul(vander, W_prime)
+        coeff = torch.arange(W.shape[0], dtype=x.dtype) + 1
+        W = W * coeff
+
+        vander = torch.vander(x, W.shape[0], increasing = True)
+
+        grad = torch.matmul(vander, W)
+        #grad needs to be unsqueezed, otherwise sampler batch gradient calculations malfunction
         grad = grad.unsqueeze(dim = -1)
-        
+
         return grad
 
 
