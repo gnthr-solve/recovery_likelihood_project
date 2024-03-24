@@ -7,9 +7,7 @@ from abc import ABC, abstractmethod
 
 from helper_tools import param_record_to_torch
 
-#torch.any(curr_state_batch.isnan() | curr_state_batch.isinf()).data
-#bool(torch.any(curr_state_batch.isnan()))
-#bool(torch.any(curr_state_batch.isinf()))
+
 """
 Parameter Error Metrics
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,6 +20,7 @@ class ParameterMetric(ABC):
     @abstractmethod
     def __call__(self, *args, **kwargs):
         pass
+
 
 
 class FrobeniusError(ParameterMetric):
@@ -49,6 +48,7 @@ class FrobeniusError(ParameterMetric):
         return frobenius_norms
 
 
+
 class LpError(ParameterMetric):
     def __init__(self, p):
         self.p = p
@@ -61,6 +61,18 @@ class LpError(ParameterMetric):
         return tla.norm(difference_vector, ord = self.p, dim = 1)
 
 
+
+class SimplexLpError(ParameterMetric):
+    def __init__(self, p):
+        self.p = p
+        self.name = f'L{p}-Error'
+
+    def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor):
+
+        difference_vector = target_vector.unsqueeze(0) - model_vector_batch.softmax(dim = -1)
+
+        return tla.norm(difference_vector, ord = self.p, dim = 1)
+    
 
 """
 Apply Metrics

@@ -2,6 +2,8 @@
 import torch
 import torch.linalg as tla
 
+#from torch.nn import Softmax
+
 from ebm import EnergyModel
 from helper_tools import quadratic_form_batch, check_nan
 from timing_decorators import timing_decorator
@@ -85,7 +87,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         ):
         super().__init__()
 
-        self.params['W'] = start_weights.clone()
+        self.params['W'] = torch.log(start_weights.clone())
 
         self.params['mu_1'] = start_mu_1.clone()
         self.params['Sigma_1'] = start_Sigma_1.clone()
@@ -96,13 +98,13 @@ class SimpleGaussianMixtureModel(EnergyModel):
         self.Sigma_inv = (lambda Sigma: torch.inverse(Sigma))
         self.dim = start_mu_1.shape[-1]
 
-    @timing_decorator
+    #@timing_decorator
     def kernel(self, x: torch.Tensor):
 
         # x can be of shape (d,) or (n, d)
         x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
 
-        W = self.params['W']
+        W = self.params['W'].softmax(dim = -1)
 
         K_1 = self.component_kernel(x = x, component = 1)
         K_2 = self.component_kernel(x = x, component = 2)
@@ -114,7 +116,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         return kernel_value
     
 
-    @timing_decorator
+    #@timing_decorator
     def component_kernel(self, x: torch.Tensor, component: int):
 
         # Reshape mu and Sigma_inv to support broadcasting
@@ -140,7 +142,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         return energy
     
 
-    @timing_decorator
+    #@timing_decorator
     def norm_const(self):
         
         Z_1 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_1']))
