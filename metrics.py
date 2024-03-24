@@ -99,8 +99,14 @@ class ParameterAssessor:
         for param_name, metric in self.param_metrics.items():
 
             target_param = self.target_params[param_name]
+            metric_col_name = f'{param_name} {metric.name}'
 
-            for training_run_id in df['training_run_id'].unique():
+            if metric_col_name in df.columns:
+                df_slice = df.loc[df[metric_col_name].isna()]
+            else:
+                df_slice = df
+
+            for training_run_id in df_slice['training_run_id'].unique():
 
                 id_mask = df['training_run_id'] == training_run_id
 
@@ -110,7 +116,7 @@ class ParameterAssessor:
 
                 metric_evals = metric(target_param, param_estimates)
 
-                df.loc[id_mask, f'{param_name} {metric.name}'] = metric_evals.tolist()
+                df.loc[id_mask, metric_col_name] = metric_evals.tolist()
 
         return df
 

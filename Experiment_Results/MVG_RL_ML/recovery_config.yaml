@@ -46,7 +46,7 @@ ModelParameters:
     data: 1.0
 SamplingParameters:
   _target_: experiment_params.SamplingParameters
-  sampler_class: MALASampler
+  sampler_class: ULASampler
   epsilon:
     _target_: helper_tools.convert_to_tensor
     data: 0.10000000149011612
