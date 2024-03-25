@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 
 from plotting_components import PlotMatrix, TimeSeriesPlot, ProcessPlot, HistogramPlot, StackedHistogramPlot
-from helper_tools import prepare_sub_dfs, prepare_sub_dfs_alt
+from helper_tools import prepare_sub_dfs
 
 ### Set Paths ###-------------------------------------------------------
 result_directory = Path('./Experiment_Results')
@@ -58,7 +58,7 @@ filter_cols = {
     'Sampler': 'HMCSampler'
 }
 
-sub_result_dfs = prepare_sub_dfs_alt(
+sub_result_dfs = prepare_sub_dfs(
     result_df = results_df,
     comparison_columns = ['Likelihood', 'Sampler'],
     #filter_cols = filter_cols,
@@ -94,7 +94,7 @@ filter_cols = {
     'Likelihood': 'Recovery'
 }
 
-sub_result_dfs = prepare_sub_dfs_alt(
+sub_result_dfs = prepare_sub_dfs(
     result_df = results_df,
     comparison_columns = ['Perturbation Variance'],
     filter_cols = filter_cols,

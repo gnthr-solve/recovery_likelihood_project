@@ -38,6 +38,25 @@ def enable_grad_decorator(func):
 
 
 """
+numpy Decorator
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def numpy_adapter(func):
+
+    @wraps(func)
+    def wrapper(self, x):
+        
+        x = torch.tensor(data = x, dtype=torch.float32)
+        
+        result = func(self, x).numpy()
+        
+        return result
+    
+    return wrapper
+
+
+
+"""
 check_nan Decorator
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
@@ -140,38 +159,7 @@ Plotting Helper Functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 
-def prepare_sub_dfs(result_df: pd.DataFrame, comparison_column: str, filter_cols: dict = None)->dict[str, pd.DataFrame]:
-    """
-        Filters a DataFrame and splits it based on unique values in a comparison column.
-        
-        Args:
-        - df: Pandas DataFrame
-        - comparison_column: Name of the column to use for splitting
-        - filter_cols: Dictionary of column, value pairs to filter before splitting
-        
-        Returns:
-        - Dictionary where keys are unique values in comparison column and values are corresponding DataFrame subsets
-    """
-    split_dict = {}
-
-    # Filter the dataframe by comparison columns having specific value like sampler = MALASampler
-    if filter_cols:
-        for col, val in filter_cols.items():
-            filter_mask = result_df[col] == val
-            result_df = result_df.loc[filter_mask]
-    
-    unique_col_values = result_df[comparison_column].unique()
-    matching_mask = lambda value: result_df[comparison_column] == value
-
-    for col_value in unique_col_values:
-        entry_name = comparison_column + f': {col_value}'
-        split_dict[entry_name] = result_df.loc[matching_mask(col_value)].copy()
-    
-    return split_dict
-
-
-
-def prepare_sub_dfs_alt(result_df: pd.DataFrame, comparison_columns: list[str], filter_cols: dict = None) -> dict[str, pd.DataFrame]:
+def prepare_sub_dfs(result_df: pd.DataFrame, comparison_columns: list[str], filter_cols: dict = None) -> dict[str, pd.DataFrame]:
     """
     Filters a DataFrame and splits it based on unique value combinations in a list of comparison columns.
 
@@ -194,7 +182,7 @@ def prepare_sub_dfs_alt(result_df: pd.DataFrame, comparison_columns: list[str], 
 
     # Get all unique combinations of values from the comparison columns
     unique_combos = result_df[comparison_columns].drop_duplicates()
-    print(unique_combos)
+    #print(unique_combos)
 
     for index, row_value in unique_combos.iterrows():
         

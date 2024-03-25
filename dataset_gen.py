@@ -6,7 +6,27 @@ import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from scipy.stats.sampling import NumericalInversePolynomial
-from scipy.integrate import trapezoid
+from scipy.integrate import trapezoid, quad
+
+from ebm import EnergyModel
+"""
+sample adapter
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+class SampleAdapter:
+
+    def __init__(self, model: EnergyModel, domain_limits):
+        self.model = model
+        self.domain_limits = domain_limits
+
+    def kernel(self, x):
+        return np.exp(-self.energy(x))
+    
+    def energy(self, x):
+        return self.model.energy(x)
+    
+    def calc_norm_const(self):
+        self.norm_const = quad(self.kernel, *self.domain_limits)
 
 """
 Univariate Polynomial
