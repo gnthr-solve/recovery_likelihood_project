@@ -58,7 +58,7 @@ likelihood = builder.setup_likelihood(model, sampler, hyper_parameters)
 
 
 batch_size = 1e+4
-burnin_offset = 1000
+burnin_offset = 10
 
 """
 Create pdf to plot

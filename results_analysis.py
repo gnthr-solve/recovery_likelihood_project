@@ -1,7 +1,7 @@
 
 import torch
 import pandas as pd
-
+import numpy as np
 from pathlib import Path
 
 
@@ -61,5 +61,42 @@ for index, row_value in unique_combos.iterrows():
 
 
 
-#print(len(results_df))
-#results_df.to_csv(result_file_path, index = False)
+
+
+"""
+Average Iteration time
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+def average_iter_time(df):
+
+    average_times_dict = {}
+    comparison_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Burnin Offset', 'Perturbation Variance']
+    unique_combinations = df[comparison_columns].drop_duplicates()
+
+    for _, setting in unique_combinations.iterrows():
+
+        entry_name = ", ".join([f"{col}: {val}" for col, val in zip(comparison_columns, setting)])
+
+        matching_mask = (df[comparison_columns] == setting).all(axis=1)
+        df_slice = df.loc[matching_mask]
+
+
+        
+
+
+
+"""
+avg_times_list = []
+for training_run_id in df_slice['training_run_id'].unique():
+
+    id_mask = df['training_run_id'] == training_run_id
+    run_df = df[id_mask]
+
+    run_timestamps = pd.to_datetime(run_df.loc['Iteration Timestamp'])
+
+    time_deltas = run_timestamps.diff()
+    avg_times_list.append(time_deltas.mean())
+
+average_times_dict[entry_name] = (np.mean(avg_times_list))
+        
+"""

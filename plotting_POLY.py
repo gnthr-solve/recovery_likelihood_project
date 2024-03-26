@@ -55,13 +55,14 @@ Sampler Comparisons
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 filter_cols = {
-    'Sampler': 'HMCSampler'
+    #'Sampler': 'HMCSampler',
+    'Perturbation Variance': 1.0,
 }
 
 sub_result_dfs = prepare_sub_dfs(
     result_df = results_df,
     comparison_columns = ['Likelihood', 'Sampler'],
-    #filter_cols = filter_cols,
+    filter_cols = filter_cols,
 )
 
 sampler_comp_process_plot_dict = {
@@ -146,9 +147,9 @@ Create Plot
 plotter = PlotMatrix(
     title='UnivariatePolynomial', 
     #sharex = 'col',
-    #sharey = 'row',
+    sharey = 'row',
 )
-plotter.add_plot_dict(plot_dict = eps_process_plot_dict)
+plotter.add_plot_dict(plot_dict = sampler_comp_hist_plot_dict)
 
 plotter.draw(fontsize=10)
 #plotter.draw(fontsize=10)

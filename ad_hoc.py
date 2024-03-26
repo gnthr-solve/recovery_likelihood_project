@@ -27,8 +27,18 @@ result_file_path = experiment_dir.joinpath(result_name)
 results_df = pd.read_csv(result_file_path)
 
 #results_df.drop(results_df[results_df['Epsilon'] == 0.0099999997764825].index, inplace=True)
-results_df['Perturbation Variance'] = results_df['Perturbation Variance'].round(4)
+#results_df['Perturbation Variance'] = results_df['Perturbation Variance'].round(4)
 #results_df['Epsilon'] = results_df['Epsilon'].round(4)
+
+"""
+Drop failed experiments
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+drop_dict ={
+    'Sampler': 'MALASampler',
+    'Perturbation Variance': 0.5
+}
+joint_drop_mask = results_df['Sampler'] == 'MALASampler' & results_df['Perturbation Variance'] == 0.5
 
 #interest_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Burnin Offset', 'Perturbation Variance']
 #combinations = results_df[interest_columns].drop_duplicates()
