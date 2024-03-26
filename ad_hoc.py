@@ -17,7 +17,7 @@ print("-device:", device)
 
 ### Set Paths ###-------------------------------------------------------
 result_directory = Path('./Experiment_Results')
-experiment_name = 'MVG_RL_ML'
+experiment_name = 'POLY_RL_ML'
 experiment_dir = result_directory / experiment_name
 
 result_name = 'results.csv'
@@ -26,9 +26,13 @@ result_file_path = experiment_dir.joinpath(result_name)
 
 results_df = pd.read_csv(result_file_path)
 
-#results_df.drop(results_df[results_df['Epsilon'] == 0.0010000000474974].index, inplace=True)
-#results_df['Perturbation Variance'] = 1.0
-results_df['Epsilon'] = results_df['Epsilon'].round(4)
+#results_df.drop(results_df[results_df['Epsilon'] == 0.0099999997764825].index, inplace=True)
+results_df['Perturbation Variance'] = results_df['Perturbation Variance'].round(4)
+#results_df['Epsilon'] = results_df['Epsilon'].round(4)
+
+#interest_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Burnin Offset', 'Perturbation Variance']
+#combinations = results_df[interest_columns].drop_duplicates()
+#print(combinations)
 
 #print(len(results_df))
 results_df.to_csv(result_file_path, index = False)

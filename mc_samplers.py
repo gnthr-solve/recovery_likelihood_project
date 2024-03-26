@@ -42,6 +42,9 @@ class EnergySampler(ABC):
     @no_grad_decorator
     def sample(self, num_samples: int, burnin_offset: int = 0): 
         ### Template Method ###
+        
+        #convert num_samples to tensor to use torch.ceil
+        num_samples = torch.tensor(num_samples, dtype=torch.float32) if isinstance(num_samples, int) else num_samples
 
         chain_length = int(torch.ceil( num_samples / self.chain_num )) + int(burnin_offset)
         #print(chain_length)

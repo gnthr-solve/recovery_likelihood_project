@@ -26,7 +26,7 @@ def main():
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'results.csv'
+    result_name = 'results_part2.csv'
 
     print(experiment_dir)
     print(config_name)

@@ -260,6 +260,46 @@ class StackedHistogramPlot(PlotComponent):
 
 
 
+class ScatterPlot(PlotComponent):
+  
+    def __init__(self, results_df: pd.DataFrame, column_to_plot_x: str, column_to_plot_y: str, title: str = None):
+    
+        self.results_df = results_df
+        self.column_to_plot_x = column_to_plot_x
+        self.column_to_plot_y = column_to_plot_y
+        self.title = title
+
+    def draw(self, ax: Axes, fontsize: int):
+
+        error_samples = [
+            [data[self.column_to_plot_x].iloc[-1], data[self.column_to_plot_y].iloc[-1]]
+            for run_id, data in self.results_df.groupby('training_run_id')
+        ]
+        
+        x_samples = error_samples[:, 0]
+        y_samples = error_samples[:, 1]
+        ax_histx = ax.inset_axes([0, 1.05, 1, 0.25], sharex=ax)
+        ax_histy = ax.inset_axes([1.05, 0, 0.25, 1], sharey=ax)
+        ax_histx.tick_params(axis="x", labelbottom=False)
+        ax_histy.tick_params(axis="y", labelleft=False)
+
+        # the scatter plot:
+        ax.scatter(x_samples, y_samples)
+
+        # now determine nice limits by hand:
+        binwidth = 0.25
+        xymax = max(np.max(np.abs(x_samples)), np.max(np.abs(y_samples)))
+        lim = (int(xymax/binwidth) + 1) * binwidth
+
+        bins = np.arange(-lim, lim + binwidth, binwidth)
+        ax_histx.hist(x_samples, bins=bins)
+        ax_histy.hist(y_samples, bins=bins, orientation='horizontal')
+
+        ax.set_xlabel(self.column_to_plot_x, fontsize = fontsize)
+        ax.set_ylabel(self.column_to_plot_y, fontsize = fontsize)
+        #ax.grid(True)
+        #ax.tick_params(labelsize=10)
+        ax.set_title(self.title)
 
 
 

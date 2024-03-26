@@ -99,17 +99,46 @@ sub_result_dfs = prepare_sub_dfs(
     comparison_columns = ['Perturbation Variance'],
     filter_cols = filter_cols,
 )
-print(sub_result_dfs.keys())
+#print(sub_result_dfs.keys())
 RL_comp_plot_dict = {
     (0,0): ProcessPlot(results_df= sub_result_dfs['Perturbation Variance: 1.0'], column_to_plot=data_columns[1], title = r'Recovery ULA $\sigma = 1.0$'),
     (0,1): ProcessPlot(results_df= sub_result_dfs['Perturbation Variance: 0.5'], column_to_plot=data_columns[1], title = r'Recovery ULA $\sigma = 0.5$'),
-    (0,2): ProcessPlot(results_df= sub_result_dfs['Perturbation Variance: 0.1000000014901161'], column_to_plot=data_columns[1], title = r'Recovery ULA $\sigma = 0.1$'),
+    (0,2): ProcessPlot(results_df= sub_result_dfs['Perturbation Variance: 0.1'], column_to_plot=data_columns[1], title = r'Recovery ULA $\sigma = 0.1$'),
     (1,0): HistogramPlot(results_df= sub_result_dfs['Perturbation Variance: 1.0'], column_to_plot=data_columns[1], bins=20, title = r'Recovery ULA $\sigma = 1.0$'),
     (1,1): HistogramPlot(results_df= sub_result_dfs['Perturbation Variance: 0.5'], column_to_plot=data_columns[1], bins=20, title = r'Recovery ULA $\sigma = 0.5$'),
-    (1,2): HistogramPlot(results_df= sub_result_dfs['Perturbation Variance: 0.1000000014901161'], column_to_plot=data_columns[1], bins=20, title = r'Recovery ULA $\sigma = 0.1$'),
+    (1,2): HistogramPlot(results_df= sub_result_dfs['Perturbation Variance: 0.1'], column_to_plot=data_columns[1], bins=20, title = r'Recovery ULA $\sigma = 0.1$'),
 }
 
 
+
+"""
+Sampler Comparisons
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+filter_cols = {
+    'Sampler': 'ULASampler'
+}
+
+sub_result_dfs = prepare_sub_dfs(
+    result_df = results_df,
+    comparison_columns = ['Likelihood', 'Epsilon'],
+    filter_cols = filter_cols,
+)
+print(sub_result_dfs.keys())
+marginal_comb = [key for key in sub_result_dfs.keys() if key.startswith('Likelihood: Marginal')]
+recovery_comb = [key for key in sub_result_dfs.keys() if key.startswith('Likelihood: Recovery')]
+marginal_comb_dict = {
+    (i, 0): ProcessPlot(results_df = sub_result_dfs[key], column_to_plot = column_to_plot, title = key)
+    for i, key in enumerate(marginal_comb)
+}
+recovery_comb_dict = {
+    (i, 1): ProcessPlot(results_df = sub_result_dfs[key], column_to_plot = column_to_plot, title = key)
+    for i, key in enumerate(recovery_comb)
+}
+eps_process_plot_dict = {
+    **marginal_comb_dict,
+    **recovery_comb_dict,
+}
 """
 Create Plot
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -119,7 +148,7 @@ plotter = PlotMatrix(
     #sharex = 'col',
     #sharey = 'row',
 )
-plotter.add_plot_dict(plot_dict = RL_comp_plot_dict)
+plotter.add_plot_dict(plot_dict = eps_process_plot_dict)
 
 plotter.draw(fontsize=10)
 #plotter.draw(fontsize=10)

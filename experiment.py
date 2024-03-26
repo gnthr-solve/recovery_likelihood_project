@@ -136,9 +136,9 @@ class Experiment:
                 'Model Batch Size': self.hyper_parameters['model_batch_size'],
                 'Learning Rate': self.hyper_parameters['optimizer_params']['lr'],
                 'Sampler': self.sampling_parameters['sampler_class'],
-                'Epsilon': float(self.sampling_parameters['epsilon']),
+                'Epsilon': round(float(self.sampling_parameters['epsilon']), 4),
                 'Likelihood': 'Marginal' if self.hyper_parameters['likelihood_class'] == 'Likelihood' else 'Recovery',
-                'Perturbation Variance': float(self.model_parameters['perturbation_var']),
+                'Perturbation Variance': round(float(self.model_parameters['perturbation_var']), 4),
                 'Burnin Offset': self.hyper_parameters['burnin_offset'],
                 'Scheduler': self.hyper_parameters['scheduler_class'],
             }

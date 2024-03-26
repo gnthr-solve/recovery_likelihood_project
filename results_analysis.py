@@ -13,7 +13,7 @@ print("-device:", device)
 
 ### Set Paths ###-------------------------------------------------------
 result_directory = Path('./Experiment_Results')
-experiment_name = 'MVG_RL_ML'
+experiment_name = 'POLY_RL_ML'
 experiment_dir = result_directory / experiment_name
 
 result_name = 'results.csv'

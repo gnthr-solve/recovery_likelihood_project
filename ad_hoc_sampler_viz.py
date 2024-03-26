@@ -38,9 +38,9 @@ Setup
 hyper_parameters = instantiate(cfg.HyperParameters)
 
 ### Sampler ###
-epsilon = torch.tensor(1e-1, dtype = torch.float32)
+epsilon = torch.tensor(1e-2, dtype = torch.float32)
 M = 1*torch.eye(n = 1)
-sampler_class = 'MALASampler'
+sampler_class = 'HMCSampler'
 sampling_parameters = SamplingParameters(
     sampler_class = sampler_class,
     epsilon = epsilon,
@@ -58,7 +58,7 @@ likelihood = builder.setup_likelihood(model, sampler, hyper_parameters)
 
 
 batch_size = 1e+4
-burnin_offset = 10
+burnin_offset = 1000
 
 """
 Create pdf to plot
@@ -102,6 +102,6 @@ plt.hist(samples, bins=50, density=True, alpha=0.5, label='samples')
 plt.legend()
 plt.gcf().set_size_inches(6,3)
 plt.title(f'{sampler_class} - burnin: {burnin_offset} - samples: {batch_size}')
-#plt.savefig(f'Figures/{sampler_class}_bi{burnin_offset}_size{batch_size}.png')
+#plt.savefig(f'Figures/{sampler_class}_bi{burnin_offset}.png')
 
 plt.show()
