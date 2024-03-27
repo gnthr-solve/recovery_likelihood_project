@@ -145,10 +145,13 @@ class SimpleGaussianMixtureModel(EnergyModel):
     #@timing_decorator
     def norm_const(self):
         
-        Z_1 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_1']))
-        Z_2 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_2']))
+        #Z_1 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_1']))
+        #Z_2 = torch.sqrt((2 * torch.pi)**self.dim * tla.det(self.params['Sigma_2']))
+
+        Sigma_joint = torch.stack(self.params['Sigma_1'], self.params['Sigma_2'])
+        Z_joint = torch.sqrt((2 * torch.pi)**self.dim * tla.det(Sigma_joint))
         
-        return Z_1, Z_2
+        return Z_joint[0], Z_joint[1]
         
 
 

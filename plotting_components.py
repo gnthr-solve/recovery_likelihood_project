@@ -121,7 +121,7 @@ class PlotMatrix:
 
 
 """
-Concrete Plot Components - To be inserted in Plot Matrix
+Plot Components - Line plots
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class TimeSeriesPlot(PlotComponent):
@@ -148,7 +148,34 @@ class TimeSeriesPlot(PlotComponent):
     
 
 
+class AggregateLinePlot(PlotComponent):
+  
+  def __init__(self, aggregate_df: pd.DataFrame, x_column: str, y_columns_dict: dict[str, str], title: str = None):
+    
+    self.aggregate_df = aggregate_df
+    self.x_column = x_column
+    self.y_columns_dict = y_columns_dict
+    self.title = title
 
+
+  def draw(self, ax: Axes, fontsize: int):
+
+    for label, y_column in self.columns_dict.items():
+
+        ax.plot(self.aggregate_df[self.x_column], self.aggregate_df[y_column], label = label)
+
+    ax.set_xlabel(self.aggregate_df[self.x_column].name, fontsize = fontsize)
+    #ax.set_ylabel(self.column_to_plot, fontsize = fontsize)
+    ax.grid(True)
+    #ax.tick_params(labelsize=10)
+    ax.set_title(self.title)
+
+
+
+"""
+Plot Components - Process Plots
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
 class ProcessPlot(PlotComponent):
   
     def __init__(self, results_df: pd.DataFrame, column_to_plot: str, title: str = None):
@@ -193,6 +220,12 @@ class ProcessPlot(PlotComponent):
 
 
 
+
+
+"""
+Plot Components - Histograms
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
 class HistogramPlot(PlotComponent):
   
     def __init__(self, results_df: pd.DataFrame, column_to_plot: str, bins: int, title: str = None):
@@ -320,7 +353,7 @@ if __name__=="__main__":
     results_df = pd.read_csv(result_file_path)
 
     ### Select Columns ###-------------------------------------------------------
-    data_columns = ['Unnorm. Likelihood Values', 'W L2-Error', 'mu_1_L2_error', 'Sigma_1_frob_error', 'mu_2_L2_error', 'Sigma_2_frob_error']
+    data_columns = ['Unnorm. Likelihood Values', 'W L2-Error']
 
     plot_index = 'Iteration Timestamp'
     #column_to_plot = 'mu_L2_error'
@@ -368,7 +401,6 @@ if __name__=="__main__":
 
     ### Create Plot ###-------------------------------------------------------
     plotter = PlotMatrix(
-       #title='Gaussian Mixture Model',
        title='UnivariatePolynomial', 
        sharex = 'col',
        sharey = 'row',
@@ -376,6 +408,4 @@ if __name__=="__main__":
     plotter.add_plot_dict(plot_dict = hist_plot_dict)
     
     plotter.draw(fontsize=10)
-    #plotter.draw(fontsize=10)
-    #plotter.draw(fontsize=9)
-    #plotter.draw(fontsize=8)
+    

@@ -26,8 +26,8 @@ def main():
     config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'results.csv'
-    #result_name = 'results_part2.csv'
+    #result_name = 'results.csv'
+    result_name = 'results_part2.csv'
 
     print(experiment_dir)
     print(config_name)
@@ -122,10 +122,10 @@ def unit_test():
 
     ### Set Paths ###
     result_directory = Path('./Experiment_Results')
-    experiment_name = 'MVG_RL_ML'
+    experiment_name = 'POLY_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'marginal_config.yaml'
+    config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
 
@@ -152,7 +152,7 @@ def unit_test():
     optimizer, scheduler = builder.setup_train_components(model, hyper_parameters)
 
     ### ATTENTION: ONLY UNIVARIATE ###
-    #dataset = dataset.unsqueeze(-1)
+    dataset = dataset.unsqueeze(-1)
 
     ### Training ###
     batch_size = hyper_parameters['batch_size']
@@ -178,15 +178,15 @@ def unit_test():
             test_grad = model.energy_grad(model_samples)
 
             print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
-            print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
-            print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
+            #print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
+            #print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
 
             likelihood.gradient(data_samples = X_batch, model_samples = model_samples)
 
             print(f"{it}_{b+1}/{epochs} Parameters:")
             for param_name, value in model.params.items():
                 print(f'{param_name} value:\n {value.data}')
-                print(f'{param_name} grad:\n {value.grad}')
+                #print(f'{param_name} grad:\n {value.grad}')
                 
                 if torch.isnan(value.data).any():
                     raise StopIteration
