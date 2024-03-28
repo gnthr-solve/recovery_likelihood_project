@@ -9,6 +9,8 @@ from scipy.stats.sampling import NumericalInversePolynomial
 from scipy.integrate import trapezoid, quad
 
 from ebm import EnergyModel
+
+
 """
 sample adapter
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -28,10 +30,11 @@ class SampleAdapter:
     def calc_norm_const(self):
         self.norm_const = quad(self.kernel, *self.domain_limits)
 
+
 """
 Univariate Polynomial
 -------------------------------------------------------------------------------------------------------------------------------------------
-"""
+
 
 def poly_kernel(x):
     return np.exp(-( x**4 + 2*(x**3) - 0.7*(x**2) - 1.2*x))
@@ -66,4 +69,51 @@ plt.ylabel("PDF(x)")
 plt.title("Samples drawn using PINV method.")
 plt.legend()
 plt.show()
+'''
+"""
+
+"""
+Univ Cosine Model
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+def cos_kernel(x):
+    diff = x - 2
+    
+    energy = 1 * np.cos(diff**2) + np.log(diff**2 + 1)
+    #energy = 1 * np.cos(diff) + np.log(diff**2 + 1)
+    return np.exp(-energy)
+
+
+domain = np.linspace(-28, 32, num = int(1e+5))
+kernel_values = cos_kernel(domain)
+#print(kernel_values[:10])
+norm_const = trapezoid(kernel_values, domain)
+#print(norm_const)
+
+
+class UnivCos:
+    
+    def pdf(self, x):
+        return cos_kernel(x)/norm_const
+    
+
+
+dist = UnivCos()
+urng = np.random.default_rng()
+rng = NumericalInversePolynomial(dist, domain = [-28, 32], random_state=urng)
+cos_dataset = rng.rvs(10000)
+print(cos_dataset[:10])
+
+
+x = np.linspace(cos_dataset.min()-0.1, cos_dataset.max()+0.1, num=10000)
+fx = dist.pdf(x)
+plt.plot(x, fx, "r-", label="pdf")
+plt.hist(cos_dataset, bins=500, density=True, alpha=0.8, label="rvs")
+plt.xlabel("x")
+plt.ylabel("PDF(x)")
+plt.title("Samples drawn using PINV method.")
+plt.legend()
+plt.show()
+'''
 '''

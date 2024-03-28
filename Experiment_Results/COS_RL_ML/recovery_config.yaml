@@ -1,0 +1,45 @@
+HyperParameters:
+  _target_: experiment_params.HyperParameters
+  batch_size: 200
+  epochs: 10
+  burnin_offset: 100
+  model_batch_size: 200
+  likelihood_class: RecoveryLikelihood
+  optimizer_class: Adam
+  optimizer_params:
+    lr: 0.2
+  scheduler_class: null
+  scheduler_params:
+    gamma: 0.9
+ModelParameters:
+  _target_: experiment_params.ModelParameters
+  model_class: UnivModeratedCosine
+  target_params:
+    W:
+      _target_: helper_tools.convert_to_tensor
+      data: 1.0
+    mu:
+      _target_: helper_tools.convert_to_tensor
+      data: 2.0
+  start_params:
+    W:
+      _target_: helper_tools.convert_to_tensor
+      data: -0.5
+    mu:
+      _target_: helper_tools.convert_to_tensor
+      data: -2.0
+  requires_adapter: true
+  perturbation_var:
+    _target_: helper_tools.convert_to_tensor
+    data: 1.0
+SamplingParameters:
+  _target_: experiment_params.SamplingParameters
+  sampler_class: MALASampler
+  epsilon:
+    _target_: helper_tools.convert_to_tensor
+    data: 0.10000000149011612
+  L: 3
+  M:
+    _target_: helper_tools.convert_to_tensor
+    data:
+    - - 1.0

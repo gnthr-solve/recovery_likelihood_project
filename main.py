@@ -20,14 +20,13 @@ def main():
 
     ### Set Paths ###
     result_directory = Path('./Experiment_Results')
-    experiment_name = 'POLY_RL_ML'
+    experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'recovery_config.yaml'
+    config_name = 'marginal_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    #result_name = 'results.csv'
-    result_name = 'results_part2.csv'
+    result_name = 'results.csv'
 
     print(experiment_dir)
     print(config_name)
@@ -79,6 +78,7 @@ def main():
     )
     
     assessor.assign_metric('W', LpError(p = 2))
+    assessor.assign_metric('mu', LpError(p = 2))
     '''
     assessor.assign_metric('W', SimplexLpError(p = 2))
     assessor.assign_metric('mu_1', LpError(p = 2))

@@ -222,32 +222,33 @@ class UnivPolynomial(EnergyModel):
 """
 Moderated Cosine
 -------------------------------------------------------------------------------------------------------------------------------------------
-Becomes more multimodal the larger W_cos gets.
+Becomes more multimodal the larger W gets.
 """
 
-class ModeratedCosine(EnergyModel):
+class UnivModeratedCosine(EnergyModel):
 
-    def __init__(self, W_cos: torch.Tensor, mu: torch.Tensor):
-        
-        self.params = {
-            'W_cos': W_cos.clone(),
-            'mu': mu.clone(),
-        }
+    def __init__(self, W: torch.Tensor, mu: torch.Tensor):
+        super().__init__()
+
+        self.params['W'] = W.clone()
+        self.params['mu'] = mu.clone()
 
 
     def energy(self, x: torch.Tensor):
 
-        W_cos = self.params['W_cos']
+        W = self.params['W']
         mu = self.params['mu']
 
         #Make x a tensor with dim = 2, if mu is scalar and x a batch the x values need to be stacked.
         x = torch.atleast_1d(x)
-        x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
+        #x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
 
         diff = x - mu
 
-        cos_term = W_cos * torch.cos(diff)
-        log_norm_term = torch.log(torch.norm(diff, p = 2, dim = 1)**2 + 1)
+        cos_term = W * torch.cos(diff**2)
+        log_norm_term = torch.log(diff**2 + 1)
+        #cos_term = W * torch.cos(torch.norm(diff, p = 2, dim = 1))
+        #log_norm_term = torch.log(torch.norm(diff, p = 2, dim = 1) + 1)
 
         return cos_term + log_norm_term
 
@@ -275,8 +276,6 @@ class SimpleLinear(EnergyModel):
         result = tla.vecdot(theta, x, dim = 1) + C
 
         return result
-
-
 
 
 
@@ -351,6 +350,24 @@ def univPolynomial_test():
 
 
 
+def moderated_cos_test():
+
+    W = torch.tensor(2, dtype = torch.float32)
+    mu = torch.tensor(3, dtype = torch.float32)
+    
+    model = UnivModeratedCosine(W = W, mu = mu)
+
+    x = torch.tensor(
+        [-1, 1, 2, -2],
+        dtype = torch.float32
+    )
+    #x = torch.tensor([2, 1], dtype = torch.float32)
+
+    x = x.unsqueeze(-1)
+    print("Model execution result: \n", model(x))
+    #print("Model execution result: \n", model.energy(x))
+    print("Model grad w.r.t. input: \n", model.energy_grad(x))
+    print("Model mean parameter grad: \n", model.avg_param_grad(x))
 
 
 
@@ -358,4 +375,5 @@ if __name__=="__main__":
 
     #linear_test()
     #mvGaussian_test()
-    univPolynomial_test()
+    #univPolynomial_test()
+    moderated_cos_test()
