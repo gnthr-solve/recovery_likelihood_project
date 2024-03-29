@@ -2,7 +2,7 @@ HyperParameters:
   _target_: experiment_params.HyperParameters
   batch_size: 200
   epochs: 10
-  burnin_offset: 100
+  burnin_offset: 10
   model_batch_size: 200
   likelihood_class: RecoveryLikelihood
   optimizer_class: Adam
@@ -31,13 +31,13 @@ ModelParameters:
   requires_adapter: true
   perturbation_var:
     _target_: helper_tools.convert_to_tensor
-    data: 1.0
+    data: 0.8
 SamplingParameters:
   _target_: experiment_params.SamplingParameters
-  sampler_class: MALASampler
+  sampler_class: HMCSampler
   epsilon:
     _target_: helper_tools.convert_to_tensor
-    data: 0.10000000149011612
+    data: 0.01
   L: 3
   M:
     _target_: helper_tools.convert_to_tensor

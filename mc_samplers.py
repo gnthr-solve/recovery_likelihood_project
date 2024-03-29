@@ -82,7 +82,7 @@ class ULASampler(EnergySampler):
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
-    @timing_decorator
+    #@timing_decorator
     def _iterate(self, x_batch: torch.Tensor):
         
         # Compute the gradient of the energy function at x_batch

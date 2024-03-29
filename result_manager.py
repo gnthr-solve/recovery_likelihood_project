@@ -19,7 +19,9 @@ class ResultManager:
 
     def export_observations(self, training_run_id: str, observation_df: pd.DataFrame):
 
-        self.load_results_df()
+        if not hasattr(self, 'results_df'):
+            print('Loading df')
+            self.load_results_df()
 
         new_results_df = observation_df
         new_results_df['training_run_id'] = training_run_id
@@ -28,7 +30,7 @@ class ResultManager:
         self.results_df = pd.concat([self.results_df, new_results_df], axis=0)
         self.results_df.reset_index(inplace = True, drop = True)
 
-        self.results_df.to_csv(self.file_path, index = False)
+        #self.results_df.to_csv(self.file_path, index = False)
 
     
     def update_by_replacement(self, update_df: pd.DataFrame):
@@ -48,6 +50,10 @@ class ResultManager:
         else:
             # If the file doesn't exist, create an empty DataFrame with the identifier
             self.results_df = pd.DataFrame(columns = ['training_run_id'])
+
+
+    def save_results(self):
+        self.results_df.to_csv(self.file_path, index = False)
 
 
 

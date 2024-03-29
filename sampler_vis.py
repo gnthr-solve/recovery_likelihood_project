@@ -7,7 +7,7 @@ from hydra import initialize, compose
 from hydra.utils import instantiate
 from pathlib import Path
 
-from test_models import UnivPolynomial
+from test_models import UnivPolynomial, UnivModeratedCosine
 from experiment_params import SamplingParameters
 from experiment import ExperimentBuilder
 
@@ -17,7 +17,7 @@ print("-device:", device)
 
 ### Set Paths ###
 result_directory = Path('./Experiment_Results')
-experiment_name = 'POLY_RL_ML'
+experiment_name = 'COS_RL_ML'
 experiment_dir = result_directory / experiment_name
 
 config_name = 'marginal_config.yaml'
@@ -49,9 +49,14 @@ sampling_parameters = SamplingParameters(
 )
 
 ### Model ###
-W = torch.tensor([-1.2, -0.7, 2, 1], dtype = torch.float32)
-model = UnivPolynomial(W)
+#W = torch.tensor([-1.2, -0.7, 2, 1], dtype = torch.float32)
+#model = UnivPolynomial(W)
 
+W = torch.tensor(-0.5, dtype = torch.float32)
+mu = torch.tensor(-2, dtype = torch.float32)
+model = UnivModeratedCosine(W = W, mu = mu)
+
+### Build ###
 builder = ExperimentBuilder()
 sampler = builder.setup_sampler(model, start_batch, sampling_parameters)
 likelihood = builder.setup_likelihood(model, sampler, hyper_parameters)

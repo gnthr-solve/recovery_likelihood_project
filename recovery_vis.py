@@ -97,7 +97,7 @@ x = np. linspace(-10,10,1000)
 target_w = [-1.2, -0.7, 2, 1]
 poly = Poly(W = target_w, mu = -4, domain = x)
 
-sigma = 0.8
+sigma = 0.3
 adapted_poly = RecoveryAdapter(poly, sigma, x)
 adapted_poly.set_sample(-4)
 

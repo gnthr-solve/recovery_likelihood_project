@@ -23,10 +23,10 @@ def main():
     experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'marginal_config.yaml'
+    config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
-    result_name = 'results.csv'
+    result_name = 'results_RL_HMC.csv'
 
     print(experiment_dir)
     print(config_name)
@@ -68,6 +68,8 @@ def main():
 
     experiment.run(num_trials = 50, exporter = exporter, observers = training_observers)
 
+    exporter.save_results()
+
     ### Update with Metrics ###
     exporter.load_results_df()
     df = exporter.results_df.copy()
@@ -96,7 +98,7 @@ def main():
     
     exporter.update_by_replacement(update_df)
     #exporter.update_results(update_df)
-    print(timing_decorator.return_average_times())
+    #print(timing_decorator.return_average_times())
     
 
     
@@ -122,10 +124,10 @@ def unit_test():
 
     ### Set Paths ###
     result_directory = Path('./Experiment_Results')
-    experiment_name = 'POLY_RL_ML'
+    experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'recovery_config.yaml'
+    config_name = 'marginal_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
 
@@ -177,7 +179,7 @@ def unit_test():
             test_energy = model.energy(model_samples)
             test_grad = model.energy_grad(model_samples)
 
-            print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
+            #print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
             #print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
             #print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
 

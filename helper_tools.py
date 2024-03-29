@@ -24,6 +24,22 @@ def no_grad_decorator(func):
     return wrapper
 
 
+class NoGradDescriptor:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+
+        def wrapper(*args, **kwargs):
+
+            with torch.no_grad():
+                result = self.func(instance, *args, **kwargs)
+
+            return result
+        
+        return wrapper
+    
 """
 Enable-Grad Decorator
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -144,9 +160,12 @@ def param_record_to_torch(param_column):
     
     func = lambda s: np.array(eval(s))
 
-    param_array_column = param_column.map(func)
+    param_array_column = param_column.map(func) if param_column.dtype == object else param_column
 
     params_array = np.stack(param_array_column, axis = 0)
+    # Check if the array is 1D
+    if params_array.ndim == 1:
+        params_array = np.expand_dims(params_array, axis=1)
 
     params_tensor = torch.tensor(params_array, dtype= torch.float32)
     

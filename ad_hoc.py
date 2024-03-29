@@ -12,10 +12,31 @@ from metrics import apply_param_metric_to_df, FrobeniusError, LpError
 
 from test_distributions import UnivPolynomial
 
+
+
+"""
+Present results overview
+-------------------------------------------------------------------------------------------------------------------------------------------
+"""
+result_directory = Path('./Experiment_Results')
+experiment_name = 'COS_RL_ML'
+experiment_dir = result_directory / experiment_name
+
+result_name = 'results_RL_HMC.csv'
+result_file_path = experiment_dir.joinpath(result_name)
+
+ana_df = pd.read_csv(result_file_path)
+
+comparison_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Perturbation Variance', 'Burnin Offset']
+unique_settings = ana_df[comparison_columns].drop_duplicates()
+print(unique_settings)
+
+
+
 """
 Concatenate all result dfs
 -------------------------------------------------------------------------------------------------------------------------------------------
-"""
+
 result_directory = Path('./Experiment_Results')
 experiment_name = 'POLY_RL_ML'
 experiment_dir = result_directory / experiment_name
@@ -38,7 +59,7 @@ print(len(complete_results_df))
 
 result_out_path = experiment_dir.joinpath('results_complete.csv')
 complete_results_df.to_csv(result_out_path, index = False)
-
+"""
 
 
 """
@@ -70,5 +91,6 @@ drop_dict ={
 
 results_df.to_csv(result_file_path, index = False)
 """
+
 
 

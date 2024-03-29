@@ -5,7 +5,7 @@ import torch.linalg as tla
 #from torch.nn import Softmax
 
 from ebm import EnergyModel
-from helper_tools import quadratic_form_batch, check_nan
+from helper_tools import quadratic_form_batch, check_nan, no_grad_decorator, NoGradDescriptor
 from timing_decorators import timing_decorator
 
 """
@@ -233,25 +233,48 @@ class UnivModeratedCosine(EnergyModel):
         self.params['W'] = W.clone()
         self.params['mu'] = mu.clone()
 
-
+    #@timing_decorator
     def energy(self, x: torch.Tensor):
 
         W = self.params['W']
         mu = self.params['mu']
 
-        #Make x a tensor with dim = 2, if mu is scalar and x a batch the x values need to be stacked.
-        x = torch.atleast_1d(x)
-        #x = x.unsqueeze(1) if mu.dim() == 0 else torch.atleast_2d(x)
+        diff = x - mu
+
+        energy = W * torch.cos(diff**2) + torch.log(diff**2 + 1)
+        
+        return energy.squeeze()
+
+    
+    def energy_grad(self, x: torch.Tensor):
+
+        W = self.params['W']
+        mu = self.params['mu']
 
         diff = x - mu
 
-        cos_term = W * torch.cos(diff**2)
-        log_norm_term = torch.log(diff**2 + 1)
-        #cos_term = W * torch.cos(torch.norm(diff, p = 2, dim = 1))
-        #log_norm_term = torch.log(torch.norm(diff, p = 2, dim = 1) + 1)
+        grad = -2* W * diff * torch.sin(diff**2) + 2 * diff/(diff**2 + 1)
+        
+        return grad
+    
+    
+    @no_grad_decorator
+    def avg_param_grad(self, x: torch.Tensor):
 
-        return cos_term + log_norm_term
+        W = self.params['W']#.detach()
+        mu = self.params['mu']#.detach()
 
+        diff = x - mu
+
+        W_grad = torch.cos(diff**2)
+        mu_grad = 2* W * diff * torch.sin(diff**2) - 2 * diff/(diff**2 + 1)
+
+        grad_dict = {
+            'W': torch.sum(W_grad)/ x.shape[0],
+            'mu': torch.sum(mu_grad) / x.shape[0], 
+        }
+        return grad_dict
+    
 
 
 """
@@ -368,6 +391,7 @@ def moderated_cos_test():
     #print("Model execution result: \n", model.energy(x))
     print("Model grad w.r.t. input: \n", model.energy_grad(x))
     print("Model mean parameter grad: \n", model.avg_param_grad(x))
+    #print(timing_decorator.return_average_times())
 
 
 
