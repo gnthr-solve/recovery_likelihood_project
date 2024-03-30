@@ -8,6 +8,7 @@ from hydra.utils import instantiate
 from pathlib import Path
 
 from test_models import UnivPolynomial, UnivModeratedCosine
+from recovery_adapter import RecoveryAdapter
 from experiment_params import SamplingParameters
 from experiment import ExperimentBuilder
 
@@ -20,12 +21,18 @@ result_directory = Path('./Experiment_Results')
 experiment_name = 'COS_RL_ML'
 experiment_dir = result_directory / experiment_name
 
-config_name = 'marginal_config.yaml'
+config_name = 'recovery_config.yaml'
 start_batch_name = 'start_batch.pt'
+dataset_name = 'dataset.pt'
 
 print(experiment_dir)
 ### Load from directory ###
 start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
+dataset = torch.load(experiment_dir.joinpath(dataset_name))
+
+random_indices = torch.randperm(dataset.shape[0])
+selected_indices = random_indices[:start_batch.shape[0]]
+dataset_batch = dataset[selected_indices].unsqueeze(-1)
 
 initialize(config_path= str(experiment_dir), version_base = None)
 cfg = compose(config_name = config_name)
@@ -40,11 +47,11 @@ hyper_parameters = instantiate(cfg.HyperParameters)
 ### Sampler ###
 epsilon = torch.tensor(1e-2, dtype = torch.float32)
 M = 1*torch.eye(n = 1)
-sampler_class = 'HMCSampler'
+sampler_class = 'ULASampler'
 sampling_parameters = SamplingParameters(
     sampler_class = sampler_class,
     epsilon = epsilon,
-    L = 5,
+    L = 3,
     M = M,
 )
 
@@ -55,6 +62,8 @@ sampling_parameters = SamplingParameters(
 W = torch.tensor(-0.5, dtype = torch.float32)
 mu = torch.tensor(-2, dtype = torch.float32)
 model = UnivModeratedCosine(W = W, mu = mu)
+model = RecoveryAdapter(model, 0.5)
+model.set_perturbed_samples(dataset_batch)
 
 ### Build ###
 builder = ExperimentBuilder()
@@ -63,13 +72,13 @@ likelihood = builder.setup_likelihood(model, sampler, hyper_parameters)
 
 
 batch_size = 1e+4
-burnin_offset = 10
+burnin_offset = 10000
 
 """
 Create pdf to plot
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-x = np. linspace(-3,3,100)
+x = np.linspace(-10,10,200)
 
 def ebm(x):
 
@@ -92,6 +101,7 @@ Generate Samples
 model_samples = likelihood.gen_model_samples(
     batch_size = batch_size,
     burnin_offset = burnin_offset,
+    data_samples = dataset_batch
 )
 
 samples = model_samples.numpy()

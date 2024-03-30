@@ -97,7 +97,7 @@ x = np. linspace(-10,10,1000)
 target_w = [-1.2, -0.7, 2, 1]
 poly = Poly(W = target_w, mu = -4, domain = x)
 
-sigma = 0.3
+sigma = 0.5
 adapted_poly = RecoveryAdapter(poly, sigma, x)
 adapted_poly.set_sample(-4)
 
@@ -107,8 +107,11 @@ adapted_poly_2.set_sample(-7)
 target_cos = Cos(W = 1, mu = 2, domain = x)
 start_cos = Cos(W = -0.5, mu = -2, domain = x)
 
-adapted_start_cos = RecoveryAdapter(start_cos, sigma, x)
-adapted_start_cos.set_sample(2)
+adapted_start_cos_1 = RecoveryAdapter(start_cos, sigma, x)
+adapted_start_cos_1.set_sample(2)
+adapted_start_cos_2 = RecoveryAdapter(start_cos, sigma, x)
+adapted_start_cos_2.set_sample(4)
+
 
 #print(poly.kernel(x)[:10])
 #print(target_cos.kernel(x)[:10])
@@ -118,9 +121,11 @@ Plot
 -------------------------------------------------------------------------------------------------------------------------------------------
 """  
 
-plt.plot(x, target_cos.pdf(x), label='target_cos pdf')
+plt.plot(x, target_cos.pdf(x), label='pdf')
 plt.plot(x, start_cos.pdf(x), label='start pdf')
-plt.plot(x, adapted_start_cos.pdf(x), label='recovery pdf')
+plt.plot(x, adapted_start_cos_1.pdf(x), label='recovery pdf')
+plt.plot(x, adapted_start_cos_2.pdf(x), label='recovery pdf')
+
 #plt.plot(x, poly.pdf(x), label='poly pdf')
 #plt.plot(x, adapted_poly.pdf(x), label='recovery pdf -4')
 #plt.plot(x, adapted_poly_2.pdf(x), label='recovery pdf -7')
@@ -128,7 +133,7 @@ plt.plot(x, adapted_start_cos.pdf(x), label='recovery pdf')
 
 plt.legend()
 plt.gcf().set_size_inches(6,3)
-#plt.title(f'{sampler_class} - burnin: {burnin_offset} - samples: {batch_size}')
+plt.title(f'Moderated Cosine Model for $w = 1$, $\mu = 2$')
 #plt.savefig(f'Figures/{sampler_class}_bi{burnin_offset}.png')
 
 plt.show()

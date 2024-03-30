@@ -92,6 +92,8 @@ class RecoveryLikelihood(Likelihood):
         perturbed_data_samples = data_samples + self.adapted_model.sigma * torch.randn_like(data_samples)
         self.adapted_model.set_perturbed_samples(perturbed_samples = perturbed_data_samples)
 
+        self.sampler.set_current_states(perturbed_data_samples)
+        
         num_samples = torch.tensor(batch_size, dtype = torch.float32)
         model_samples = self.sampler.sample(num_samples = num_samples, burnin_offset= burnin_offset)
         

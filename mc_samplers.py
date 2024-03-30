@@ -38,6 +38,10 @@ class EnergySampler(ABC):
         ### Hook Method ###
         pass
 
+    
+    def set_current_states(self, state_batch: torch.Tensor):
+        self.curr_state_batch = state_batch
+
 
     @no_grad_decorator
     def sample(self, num_samples: int, burnin_offset: int = 0): 

@@ -127,7 +127,7 @@ def unit_test():
     experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'marginal_config.yaml'
+    config_name = 'recovery_config.yaml'
     dataset_name = 'dataset.pt'
     start_batch_name = 'start_batch.pt'
 
@@ -208,8 +208,8 @@ def unit_test():
 
 if __name__=="__main__":
 
-    main()
-    #unit_test()
+    #main()
+    unit_test()
    
 
     
