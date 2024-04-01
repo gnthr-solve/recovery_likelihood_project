@@ -80,12 +80,6 @@ Unadjusted Langevin Algorithm
 -------------------------------------------------------------------------------------------------------------------------------------------
 ULA does not use any checks and the implementation thus consists only of the implementation for the _iterate method
 and the instantiation of the StdIterStrategy.
-
-The timing_decorator instantiates a descriptor which wraps the _iterate method when it is first called to track the iteration time.
-While the wrapping itself is only done once and the overhead is minimal on CPU, 
-on GPU the native python implementation of the descriptor can slow down execution.
-This is because native python instructions are executed on CPU 
-and this requires torch to interrupt GPU processing and switch to CPU execution between _iterate calls.
 """
 
 class ULASampler(EnergySampler):

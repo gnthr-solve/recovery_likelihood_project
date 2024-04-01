@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from numpy.random import normal
 from abc import ABC, abstractmethod
 from scipy.integrate import trapezoid, quad
+
 """
 Classes
 -------------------------------------------------------------------------------------------------------------------------------------------

@@ -2,8 +2,6 @@
 import torch
 
 from ebm import EnergyModel
-from helper_tools import check_nan
-
 
 
 """
@@ -57,7 +55,9 @@ class RecoveryAdapter(EnergyModel):
 
 
 if __name__=="__main__":
-    
+    """
+    Implementation test example for verification.
+    """
     from test_models import MultivariateGaussianModel
 
     ### Instantiate Model with initial Parameters ###

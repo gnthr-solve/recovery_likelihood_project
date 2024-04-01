@@ -14,6 +14,8 @@ from torch.distributions import MultivariateNormal
 """
 No-Grad Decorator
 -------------------------------------------------------------------------------------------------------------------------------------------
+A wrapper decorator that enables the torch.no_grad() context to avoid gradient tracking.
+Used in the samplers, for whose iterations we do not want to build a computational graph.
 """
 def no_grad_decorator(func):
     @wraps(func)
@@ -43,6 +45,11 @@ class NoGradDescriptor:
 """
 Enable-Grad Decorator
 -------------------------------------------------------------------------------------------------------------------------------------------
+Wraps a function or method in torch.enable_grad context manager.
+When a test model does not have an implementation for the energy_grad method it is done via torchs autograd.
+energy_grad is called repeatedly in the samplers however which are in a no_grad context.
+Decorating EnergyModel's energy_grad method with this decorator 
+allows to temporarily enable gradient tracking within the samplers general no_grad context.
 """
 def enable_grad_decorator(func):
     @wraps(func)
@@ -54,8 +61,9 @@ def enable_grad_decorator(func):
 
 
 """
-numpy Decorator
+Numpy Decorator
 -------------------------------------------------------------------------------------------------------------------------------------------
+Small helper designed to use numpy/scipy quadrature for methods that expect a torch.Tensor
 """
 def numpy_adapter(func):
 
@@ -73,26 +81,13 @@ def numpy_adapter(func):
 
 
 """
-check_nan Decorator
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-def check_nan(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
-        if torch.isnan(result).any():
-            print(f"NaN detected in result of {func.__name__}")
-            print(*args)
-        return result
-    return wrapper
-
-
-"""
 Torch Functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
-    
+    """
+    Calculates the quadratic form x^T M x for a batch of tensors x_batch.
+    """
     result = tla.vecdot(
         torch.matmul(x_batch, matrix),
         x_batch
@@ -105,10 +100,18 @@ def non_batch_dims(tensor_batch: torch.Tensor):
     return tuple(range(1, tensor_batch.dim()))
 
 
+
 """
 Config Setup Functions
 -------------------------------------------------------------------------------------------------------------------------------------------
+Instantiating classes with hydra requires a specific form (see the param_dict_to_hydra function).
+The _target_ keyword that is stored in a config.yaml accepts either a type to instantiate or a function that handles the instantiation.
+Since it is important for torch that the datatypes of tensors align, the _target_ for tensors is set to the convert_to_tensor function.
+
+To avoid having to import all possible models, optimisers, schedulers and so on the retrieve_class function is defined.
+This is used in the ExperimentBuilder.
 """
+
 def retrieve_class(module_name, class_name):
     return importlib.import_module(module_name).__dict__[class_name]
 
@@ -155,6 +158,10 @@ def convert_to_tensor(data):
 """
 Pandas to torch
 -------------------------------------------------------------------------------------------------------------------------------------------
+The ParameterAssessor in the metrics module calculates metrics for the parameter columns.
+Here the problem is that pandas stores tensors and arrays as strings.
+This function evaluates such strings, converts them to numpy arrays, stacks them along the batch dimension 
+and returns them as a torch.Tensor.
 """
 def param_record_to_torch(param_column):
     
@@ -173,89 +180,15 @@ def param_record_to_torch(param_column):
 
 
 
-"""
-Plotting Helper Functions
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-
-def prepare_sub_dfs(result_df: pd.DataFrame, comparison_columns: list[str], filter_cols: dict = None) -> dict[str, pd.DataFrame]:
-    """
-    Filters a DataFrame and splits it based on unique value combinations in a list of comparison columns.
-
-    Args:
-        result_df: Pandas DataFrame.
-        comparison_columns: List of column names to use for splitting (combined values as keys).
-        filter_cols: Dictionary of column, value pairs to filter before splitting (optional).
-
-    Returns:
-        A dictionary where keys are unique combinations of values from the comparison columns,
-        and values are corresponding DataFrame subsets.
-    """
-    split_dict = {}
-
-    # Filter the dataframe based on filter_cols if provided
-    if filter_cols:
-        for col, val in filter_cols.items():
-            filter_mask = result_df[col] == val
-            result_df = result_df.loc[filter_mask]
-
-    # Get all unique combinations of values from the comparison columns
-    unique_combos = result_df[comparison_columns].drop_duplicates()
-    #print(unique_combos)
-
-    for index, row_value in unique_combos.iterrows():
-        
-        entry_name = ", ".join([f"{col}: {val}" for col, val in zip(comparison_columns, row_value)])
-        
-        matching_mask = (result_df[comparison_columns] == row_value).all(axis=1)
-        split_dict[entry_name] = result_df.loc[matching_mask].copy()
-
-    return split_dict
-
-
-
-def remove_duplicate_plot_descriptors(array: np.ndarray, axis: int, inverse: bool):
-
-    shape = array.shape
-    axis_iter = [
-        array[k,:] if axis == 0 else array[:, k]
-        for k in range(shape[axis])
-    ]
-
-    for k, slice in enumerate(axis_iter):
-
-        if inverse:
-            mask_slice = slice[::-1]
-        else:
-            mask_slice = slice
-        
-        _, unique_slice_inds = np.unique(mask_slice, return_index = True)
-        
-        mask = np.zeros_like(slice, dtype=bool)
-        mask[unique_slice_inds] = True
-
-        if inverse:
-            slice = np.where(mask[::-1], slice, '')
-        else:
-            slice = np.where(mask, slice, '')
-
-        if axis == 0:
-            array[k, :] = slice
-        else:
-            array[:, k] = slice
-        
-    return array
-        
-
-
-
-
 
 
 
 
 
 if __name__ == "__main__":
+    """
+    Implementation test example for verification.
+    """
     test_model_dict = {
         'model_class': 'MultivariateGaussianModel',
         'start_params': {

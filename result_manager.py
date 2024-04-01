@@ -6,10 +6,16 @@ import pandas as pd
 import numpy as np
 
 from pathlib import Path
+
+
 """
-Result Exporter Blueprint TODO
+ResultManager
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Simple class to manage the results csv files produced during experiment runs.
+Opens file as pandas.Dataframe and appends the data the obervers accumulate during a training procedure.
+It also sets an iteration number and the training_run_id to distinguish individual experiment runs.
 """
+
 class ResultManager:
 
     def __init__(self, file_name: str, file_folder_path: Path):

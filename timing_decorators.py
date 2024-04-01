@@ -9,6 +9,13 @@ from functools import wraps
 """
 Timing Info Descriptor
 -----------------------------------------------------------------------------------------------------------------------------------------------
+This descriptor is meant to be used by the TimingDecorator below.
+When the method it manages is first called the descriptor registers the name of the owner class and wraps the method
+in timing logic.
+While the wrapping itself is only done once and the overhead is minimal on CPU, 
+on GPU the native python implementation of the descriptor can slow down execution.
+This is because native python instructions are executed on CPU 
+and this requires torch to interrupt GPU processing and switch to CPU execution between method calls.
 """
 class MethodTimingDescriptor:
 
@@ -96,6 +103,15 @@ class TorchMethodTimingDescriptor2:
 """
 Timing Info Descriptor-Decorator
 -----------------------------------------------------------------------------------------------------------------------------------------------
+The __call__ method of the timing_decorator operates on a class method by instantiating a linked descriptor.
+The descriptor wraps the method when it is first called to track the execution time.
+The execution times are stored under the name of the class and name of the method in the _timed_methods attribute.
+In this way one decorator can accumulate the execution times of different classes and their methods at the same time.
+When return_average_times is called the decorator extracts the execution times of the descriptors 
+that it assigned to a decorated method with __call__.
+It then averages the times and returns a dictionary with all the methods it tracked as keys, and their average execution times as values.
+
+When efficiency is an issue the decorator can easily be commented out.
 """
 class TimingDecorator:
 

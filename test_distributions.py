@@ -8,6 +8,12 @@ from abc import ABC, abstractmethod
 from ebm import EnergyModel
 from helper_tools import enable_grad_decorator
 
+"""
+This file does not directly belong into the active framework, for the models used in training see the test_models module.
+Originally it was intended to transform models into proper distributions by approximating their normalisation constant.
+Due to the difficulty of obtaining it for general models however it was not developed further to date.
+"""
+
 
 
 """

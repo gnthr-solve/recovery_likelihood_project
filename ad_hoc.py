@@ -12,6 +12,9 @@ from metrics import apply_param_metric_to_df, FrobeniusError, LpError
 
 from test_distributions import UnivPolynomial
 
+"""
+File for disconnected short operations that don't warrant their own module.
+"""
 
 
 """

@@ -16,8 +16,13 @@ from training_observer import Subject
 
 
 """
-TrainingProcedure Blueprint
+TrainingProcedure
 -------------------------------------------------------------------------------------------------------------------------------------------
+Initialises with all the components necessary for a training run.
+When __call__ is executed it runs the training, the code for which is separated into epoch and training loops.
+
+TrainingProcedure plays the role of Subject in the Observer design pattern and inherits the Subject methods.
+After each training loop it notifies the registered observers.
 """
 class TrainingProcedure(Subject):
 
@@ -100,7 +105,9 @@ class TrainingProcedure(Subject):
 
 
 if __name__=="__main__":
-
+    """
+    Implementation test example for verification.
+    """
     from torch.optim import Adam
     from torch.optim.lr_scheduler import ExponentialLR
 

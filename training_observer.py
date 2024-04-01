@@ -8,6 +8,18 @@ from abc import ABC, abstractmethod
 from recovery_adapter import RecoveryAdapter
 
 """
+This file contains the Subject interface used by the TrainingProcedure 
+and the abstract Observer class with its concrete implementations:
+- ParameterObserver retrieves, detaches and stores the current model parameter values
+- TimingObserver tracks the iteration time of a training_loop
+- LikelihoodObserver calculates the un-normalised log likelihood of the current parameters.
+
+The implementations are done with a mix of native python, pandas and torch functionality.
+They slow down training considerably pure torch versions should be the next step TODO
+"""
+
+
+"""
 Subject Role Interface
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
@@ -139,7 +151,7 @@ class LikelihoodObserver(Observer):
 
 
 """
-Descriptor-Decorator Approach
+Descriptor-Decorator Blueprint, not currently used.
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class ObservationDescriptor:
