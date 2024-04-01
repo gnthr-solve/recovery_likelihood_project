@@ -11,7 +11,12 @@ from helper_tools import param_record_to_torch
 """
 Parameter Error Metrics
 -------------------------------------------------------------------------------------------------------------------------------------------
+Classes for calculating error metrics for the deviation between estimated parameter and target parameters for a model.
+
+The __call__method expects the true parameter of the target distribution and a batch of estimates.
+These classes are used by the ParameterAssessor to create the error columns in the csv files the Experiment class produces.
 """
+
 class ParameterMetric(ABC):
 
     def __init__(self):
@@ -75,8 +80,11 @@ class SimplexLpError(ParameterMetric):
     
 
 """
-Apply Metrics
+ParameterAssessor
 -------------------------------------------------------------------------------------------------------------------------------------------
+Uses ParameterMetric's to update a result dataframe with assigned error metrics.
+It is instantiated with the models target parameters, to which metrics can be assigned in assign_metric.
+apply_param_metrics_to_df then takes a dataframe, calculates the assigned parameter metrics and adds them to the dataframe as columns.
 """
 class ParameterAssessor:
 
@@ -121,71 +129,3 @@ class ParameterAssessor:
         return df
 
 
-
-
-
-
-"""
-Apply Metrics
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-def apply_param_metric_to_df(df: pd.DataFrame, target_param: torch.Tensor, param_name: str, metric: ParameterMetric):
-
-    df = df.copy()
-    for training_run_id in df['training_run_id'].unique():
-
-        id_mask = df['training_run_id'] == training_run_id
-
-        df_subset = df[id_mask]
-        param_column = df_subset[param_name]
-        param_estimates = param_record_to_torch(param_column)
-
-        frob_norms = metric(target_param, param_estimates)
-
-        df.loc[id_mask, f'{param_name}_{metric.name}'] = frob_norms.tolist()
-
-    return df
-
-
-"""
-Simple Metric Functions
--------------------------------------------------------------------------------------------------------------------------------------------
-"""
-def vector_p_norm(target_vector: torch.Tensor, model_vector: torch.Tensor, p):
-
-    difference_vector = target_vector - model_vector
-
-    return tla.norm(difference_vector, ord = p)
-
-
-
-def frobenius_norm(target_matrix: torch.Tensor, model_matrix: torch.Tensor):
-
-    difference_matrix = target_matrix - model_matrix
-
-    return tla.norm(difference_matrix, ord = 'fro')
-
-
-
-def batch_frobenius_norm(target_matrix: torch.Tensor, model_matrix_batch: torch.Tensor):
-    """
-    Compute the Frobenius norm between a target matrix and a batch of model matrices.
-
-    Args:
-        target_matrix (torch.Tensor): The target matrix.
-        model_matrix_batch (torch.Tensor): A batch of model matrices.
-
-    Returns:
-        torch.Tensor: Frobenius norm for each matrix in the batch.
-    """
-
-    # Compute the difference matrix for each model matrix in the batch
-    difference_matrices = target_matrix.unsqueeze(0) - model_matrix_batch
-    #return difference_matrices
-    #print(difference_matrices.dim())
-
-    # Compute the Frobenius norm along the appropriate dimension
-    frobenius_norms = torch.norm(difference_matrices, p='fro', dim=(1, 2))
-    return frobenius_norms
-
-    return frobenius_norms.reshape(-1, 1)  # Reshape to (n, 1)?

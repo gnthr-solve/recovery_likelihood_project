@@ -5,6 +5,17 @@ import torch.linalg as tla
 from torch.distributions import MultivariateNormal
 from abc import ABC, abstractmethod
 
+"""
+The purpose of the IterStrategy classes is mainly to reduce boilerplate code in the mc_samplers.
+
+The stochastic component of the MCMC samplers requires sampling large batches of either standard normal random variables
+or, in the case of HMC, normal random variables with covariance matrix given by the Momentum matrix.
+
+The IterStrategy classes (so called because they follow the Strategy design pattern) simply provide an iterator over
+the needed normal samples in a uniform way. 
+This avoids having to give a specific generation method for these samples in the sampler classes.
+"""
+
 
 
 """

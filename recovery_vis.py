@@ -105,7 +105,7 @@ adapted_poly_2 = RecoveryAdapter(poly, sigma, x)
 adapted_poly_2.set_sample(-7)
 
 target_cos = Cos(W = 1, mu = 2, domain = x)
-start_cos = Cos(W = -0.5, mu = -2, domain = x)
+start_cos = Cos(W = -0.1, mu = -6, domain = x)
 
 adapted_start_cos_1 = RecoveryAdapter(start_cos, sigma, x)
 adapted_start_cos_1.set_sample(2)

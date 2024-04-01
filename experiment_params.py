@@ -9,6 +9,19 @@ from omegaconf import DictConfig, OmegaConf
 
 from helper_tools import param_dict_tolist, param_dict_to_hydra
 
+
+"""
+This file contains custom dictionary-like implementations for the involved parameter sets.
+The classes allow organising the parameters in semantic units, and pass them with the **kwargs syntax.
+This is particularly useful for component instantiation in the ExperimentBuilder.
+
+All Parameterset subclasses also inherit the as_config method.
+as_config creates the structured DictConfig form of the parameter sets 
+that allow the setup files to create the configs necessary for hydra to instantiate classes and torch.Tensors.
+It uses the param_dict_to_hydra function defined in helper_tools.
+"""
+
+
 """
 Parameterset interface
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -140,7 +153,11 @@ class LikelihoodParameters(Parameterset):
 
 
 
+
 if __name__ == "__main__":
+    """
+    Implementation test example for verification.
+    """
     import yaml
 
     hyper_params = HyperParameters(

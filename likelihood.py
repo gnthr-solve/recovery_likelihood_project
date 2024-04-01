@@ -12,7 +12,8 @@ Standard/Marginal Maximum Likelihood
 -------------------------------------------------------------------------------------------------------------------------------------------
 Class responsible for calculating the gradient of the standard (or marginal) NLL function.
 Provides an API for generating the necessary model samples as well.
-Here the model sample batch size can be chosen arbitrarily to modify the precision of the Monte Carlo estimate.
+Here the model sample batch size can be chosen arbitrarily to modify the precision of the Monte Carlo estimate 
+for the model component of the Likelihood gradient.
 """
 
 class Likelihood:
@@ -57,7 +58,10 @@ Recovery Maximum Likelihood
 Class responsible for calculating the gradient of the NLL function using the Recovery Likelihood approach.
 Provides an API for generating the necessary model samples as well.
 Here the model sample batch size is tied to the size of the training data batch, 
-running one chain and extracting one sample per training data point.
+running one chain per training data point.
+
+As each training data point corresponds to one MCMC chain, 
+the batch_size argument in the gen_model_samples method MUST be an integer multiple of the start_batch size.
 """
 
 class RecoveryLikelihood(Likelihood):

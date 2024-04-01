@@ -15,8 +15,12 @@ from training_procedure import TrainingProcedure
 from training_observer import Observer
 
 """
-ExperimentBuilder Idea TODO
+ExperimentBuilder
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The ExperimentBuilder is mainly used in the Experiment class, but can also be used on its own.
+It instantiates the inference components for an experiment with its respective methods.
+For that it uses the retrieve_class function from the helper_tools.
+The main benefit of that function is that the individual component classes don't have to be imported separately (see main.py \ unit_test).
 """
 class ExperimentBuilder:
 
@@ -67,8 +71,14 @@ class ExperimentBuilder:
 
 
 """
-Experiment Idea TODO
+Experiment Class
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Experiment initialises with the concrete Parameterset classes, 
+builds the necessary components using the ExperimentBuilder with these parameter sets.
+
+It provides a 'run' method that connects a list of observers to the training_procedure instance,
+runs a specified number of trials with the same experiment parameters,
+retrieves and structures the observers result pandas.Dataframes and passes them to a ResultManager instance for export.
 """
 class Experiment:
     def __init__(

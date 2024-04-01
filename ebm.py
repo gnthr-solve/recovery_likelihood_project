@@ -20,6 +20,10 @@ energy_grad is predominantly used in the sampling algorithms, while avg_param_gr
 ATTENTION: Here the convention is that the density of an energy model is given as
 p(x) = exp(-U(x))/Z
 where U is the energy functional. I.e. the energy method is understood to be negated when producing a density.
+
+For the sampling process gradient tracking is disabled to avoid maintaining the computation graph.
+If a test distribution does not implement energy_grad itself however, 
+gradient tracking is enabled locally with the enable_grad_decorator.
 """
 
 class EnergyModel(nn.Module):
@@ -84,9 +88,6 @@ class EnergyModel(nn.Module):
             param_grads = {name: param.grad/batch_size for name, param in self.params.items()}
             # Clear the gradients for the next computation
             self.zero_grad()
-
-            #for param_name, value in param_grads.items():
-            #    print(f'{param_name} grad:\n {value}')
             
             return param_grads
         

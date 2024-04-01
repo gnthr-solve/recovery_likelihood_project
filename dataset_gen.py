@@ -10,9 +10,15 @@ from scipy.integrate import trapezoid, quad
 
 from ebm import EnergyModel
 
+"""
+File to generate the training datasets for test models.
+The partition is numerically approximated with numpy or scipy methods 
+and NumericalInversePolynomial is used to sample from the resulting densities.
+"""
+
 
 """
-sample adapter
+Sample adapter Blueprint
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 class SampleAdapter:

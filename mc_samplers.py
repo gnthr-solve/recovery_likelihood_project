@@ -11,12 +11,14 @@ from timing_decorators import timing_decorator
 
 
 """
-Multi-Chain Energy Sampler Base Class
+Multi-Chain Energy Sampler Abstract Base Class
 -------------------------------------------------------------------------------------------------------------------------------------------
-Aspects TODO and to decide:
-- What should the chain length be?
-- Should the number of chains continue to be determined by the setup batch?
-- How should the next sample sets start batches be determined? (currently the last batch of the previous call)
+The EnergySampler base class provides the 'sample' method and the main part of the __init__ method for its subclasses.
+
+'sample' follows the Template Method pattern. 
+It defines the structure of the overall sampling process, relaying the specific iteration procedure to the concrete subclasses.
+Subclasses must implement the _iterate method and can use super().__init__ to set up the step size, start batch, number of chains
+and data dimension for the IterStrategy.
 """
 class EnergySampler(ABC):
 
@@ -76,6 +78,14 @@ class EnergySampler(ABC):
 """
 Unadjusted Langevin Algorithm
 -------------------------------------------------------------------------------------------------------------------------------------------
+ULA does not use any checks and the implementation thus consists only of the implementation for the _iterate method
+and the instantiation of the StdIterStrategy.
+
+The timing_decorator instantiates a descriptor which wraps the _iterate method when it is first called to track the iteration time.
+While the wrapping itself is only done once and the overhead is minimal on CPU, 
+on GPU the native python implementation of the descriptor can slow down execution.
+This is because native python instructions are executed on CPU 
+and this requires torch to interrupt GPU processing and switch to CPU execution between _iterate calls.
 """
 
 class ULASampler(EnergySampler):
@@ -86,7 +96,7 @@ class ULASampler(EnergySampler):
         self.z_iterator = StdIterStrategy(self.data_dim, self.chain_num)
 
 
-    #@timing_decorator
+    @timing_decorator
     def _iterate(self, x_batch: torch.Tensor):
         
         # Compute the gradient of the energy function at x_batch
@@ -107,6 +117,8 @@ class ULASampler(EnergySampler):
 """
 Metropolis Adjusted Langevin Algorithm
 -------------------------------------------------------------------------------------------------------------------------------------------
+MALA implements the _iterate and the _accept_reject method.
+Before _iterate returns it calls _accept_reject to conduct the Metropolis-Hastings check.
 """
 
 class MALASampler(EnergySampler):
@@ -159,6 +171,10 @@ class MALASampler(EnergySampler):
 """
 Hamiltonian Monte Carlo
 -------------------------------------------------------------------------------------------------------------------------------------------
+HMC implements its own versions of _iterate and _accept_reject.
+It requires two extra parameters:
+The number of steps to take before applying the Metropolis-Hastings check, 'L'
+and the momentum matrix 'M' that defines the momentum with which sample particles move.
 """
 class HMCSampler(EnergySampler):
 
@@ -196,8 +212,7 @@ class HMCSampler(EnergySampler):
         p_hat_batch = p_hat_batch - self.epsilon * (grad_batch / 2)
 
         p_hat_batch = - p_hat_batch
-        #print('Current x_batch:', x_batch)
-        #print('Current x_hat_batch:', x_hat_batch)
+        
         return self._accept_reject(x_batch = x_batch, p_batch = p_batch, x_hat_batch = x_hat_batch, p_hat_batch = p_hat_batch)
 
 
@@ -224,7 +239,9 @@ class HMCSampler(EnergySampler):
 
 
 if __name__=="__main__":
-    
+    """
+    Implementation test example for verification.
+    """
     from test_models import MultivariateGaussianModel
 
     ### Instantiate Model with initial Parameters ###

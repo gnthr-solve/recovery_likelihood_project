@@ -2,7 +2,12 @@
 
 
 def main():
-
+    """
+    Main experiment routine. 
+    Instantiates the involved components from a given config, 
+    conducts a specified number of training procedure runs (num_trials) 
+    and stores the observed results in the specified result csv.
+    """
     import torch
 
     from hydra import initialize, compose
@@ -106,7 +111,11 @@ def main():
 
 
 def unit_test():
-
+    """
+    Unit test routine. 
+    Instantiates the involved components from a given config like in main, 
+    and conducts a single training procedure for small scale experiments and testing purposes.
+    """
     import torch
 
     from torch.utils.data import DataLoader
@@ -176,12 +185,14 @@ def unit_test():
                 data_samples = X_batch,
             )
 
+            ### Calculate and print energy, energy_grad and samples extreme values to investigate failure ###
             test_energy = model.energy(model_samples)
             test_grad = model.energy_grad(model_samples)
 
-            #print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
-            #print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
-            #print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
+            print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
+            print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
+            print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
+
 
             likelihood.gradient(data_samples = X_batch, model_samples = model_samples)
 
