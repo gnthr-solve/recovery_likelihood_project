@@ -28,10 +28,16 @@ def main():
     experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    config_name = 'recovery_config.yaml'
+    #config_name = 'recovery_config.yaml'
+    config_name = 'marginal_config.yaml'
+
     dataset_name = 'dataset.pt'
-    start_batch_name = 'start_batch.pt'
-    result_name = 'results_RL_HMC.csv'
+    #start_batch_name = 'start_batch.pt'
+    #start_batch_name = 'zeros_start_batch.pt'
+    start_batch_name = 'normal_start_batch.pt'
+
+    #result_name = 'results_RL_MALA.csv'
+    result_name = 'results_ML_MALA.csv'
 
     print(experiment_dir)
     print(config_name)
@@ -71,7 +77,7 @@ def main():
         file_folder_path = experiment_dir,
     )
 
-    experiment.run(num_trials = 50, exporter = exporter, observers = training_observers)
+    experiment.run(num_trials = 100, exporter = exporter, observers = training_observers)
 
     exporter.save_results()
 
@@ -137,13 +143,18 @@ def unit_test():
     experiment_dir = result_directory / experiment_name
 
     config_name = 'recovery_config.yaml'
+    #config_name = 'marginal_config.yaml'
     dataset_name = 'dataset.pt'
-    start_batch_name = 'start_batch.pt'
+    #start_batch_name = 'start_batch.pt'
+    start_batch_name = 'zeros_start_batch.pt'
+    #start_batch_name = 'normal_start_batch.pt'
 
     print(experiment_dir)
+
     ### Load from directory ###
     dataset = torch.load(experiment_dir.joinpath(dataset_name))
     start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
+    #print(start_batch.shape)
 
     initialize(config_path= str(experiment_dir), version_base = None)
     cfg = compose(config_name = config_name)
@@ -167,10 +178,12 @@ def unit_test():
 
     ### Training ###
     batch_size = hyper_parameters['batch_size']
+    model_batch_size = hyper_parameters['model_batch_size']
     burnin_offset = hyper_parameters['burnin_offset']
     train_loader = DataLoader(dataset, batch_size = batch_size, shuffle=True)
 
     epochs = hyper_parameters['epochs']
+    #epochs = 100
     pbar   = tqdm(range(epochs))
 
     for it in pbar:
@@ -180,18 +193,19 @@ def unit_test():
             optimizer.zero_grad()
             
             model_samples = likelihood.gen_model_samples(
-                batch_size = batch_size,
+                batch_size = model_batch_size,
                 burnin_offset = burnin_offset,
                 data_samples = X_batch,
             )
-
+            #print(model_samples.shape)
+            
             ### Calculate and print energy, energy_grad and samples extreme values to investigate failure ###
-            test_energy = model.energy(model_samples)
-            test_grad = model.energy_grad(model_samples)
+            #test_energy = model.energy(model_samples)
+            #test_grad = model.energy_grad(model_samples)
 
             print('Samples (components) max/min: ', float(torch.max(model_samples)), float(torch.min(model_samples)))
-            print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
-            print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
+            #print('Energy max/min: ', float(torch.max(test_energy)), float(torch.min(test_energy)))
+            #print('Gradients (components) max/min: ', float(torch.max(test_grad)), float(torch.min(test_grad)))
 
 
             likelihood.gradient(data_samples = X_batch, model_samples = model_samples)
@@ -199,7 +213,7 @@ def unit_test():
             print(f"{it}_{b+1}/{epochs} Parameters:")
             for param_name, value in model.params.items():
                 print(f'{param_name} value:\n {value.data}')
-                #print(f'{param_name} grad:\n {value.grad}')
+                print(f'{param_name} grad:\n {value.grad}')
                 
                 if torch.isnan(value.data).any():
                     raise StopIteration
@@ -219,8 +233,8 @@ def unit_test():
 
 if __name__=="__main__":
 
-    #main()
-    unit_test()
+    main()
+    #unit_test()
    
 
     

@@ -2,12 +2,12 @@ HyperParameters:
   _target_: experiment_params.HyperParameters
   batch_size: 200
   epochs: 10
-  burnin_offset: 100
-  model_batch_size: 20000
+  burnin_offset: 1
+  model_batch_size: 1000
   likelihood_class: RecoveryLikelihood
   optimizer_class: Adam
   optimizer_params:
-    lr: 0.2
+    lr: 0.1
   scheduler_class: null
   scheduler_params:
     gamma: 0.9
@@ -31,13 +31,13 @@ ModelParameters:
   requires_adapter: true
   perturbation_var:
     _target_: helper_tools.convert_to_tensor
-    data: 0.5
+    data: 1.5
 SamplingParameters:
   _target_: experiment_params.SamplingParameters
   sampler_class: MALASampler
   epsilon:
     _target_: helper_tools.convert_to_tensor
-    data: 0.01
+    data: 0.1
   L: 3
   M:
     _target_: helper_tools.convert_to_tensor

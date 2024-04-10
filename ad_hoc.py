@@ -8,7 +8,7 @@ from pathlib import Path
 from experiment import Experiment
 from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
 from result_manager import ResultManager
-from metrics import apply_param_metric_to_df, FrobeniusError, LpError
+from metrics import FrobeniusError, LpError
 
 from test_distributions import UnivPolynomial
 
@@ -20,19 +20,19 @@ File for disconnected short operations that don't warrant their own module.
 """
 Present results overview
 -------------------------------------------------------------------------------------------------------------------------------------------
-
+"""
 result_directory = Path('./Experiment_Results')
 experiment_name = 'COS_RL_ML'
 experiment_dir = result_directory / experiment_name
 
-result_name = 'results_complete.csv'
+result_name = 'results_RL_MALA.csv'
 result_file_path = experiment_dir.joinpath(result_name)
 
 ana_df = pd.read_csv(result_file_path)
 
-comparison_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Perturbation Variance', 'Burnin Offset']
+comparison_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Perturbation Variance', 'Burnin Offset', 'Model Batch Size']
 unique_settings = ana_df[comparison_columns].drop_duplicates()
-#print(unique_settings)
+print(unique_settings)
 
 for index, setting in enumerate(unique_settings.itertuples(index = False, name= None)):
 
@@ -40,12 +40,12 @@ for index, setting in enumerate(unique_settings.itertuples(index = False, name= 
     setting_slice = ana_df.loc[matching_mask]
     print(setting)
     print(len(setting_slice))
-"""
+
     
 """
 Concatenate all result dfs
 -------------------------------------------------------------------------------------------------------------------------------------------
-"""
+
 result_directory = Path('./Experiment_Results')
 experiment_name = 'COS_RL_ML'
 experiment_dir = result_directory / experiment_name
@@ -75,7 +75,7 @@ print(len(complete_results_df))
 
 result_out_path = experiment_dir.joinpath('results_complete.csv')
 complete_results_df.to_csv(result_out_path, index = False)
-
+"""
 
 
 """

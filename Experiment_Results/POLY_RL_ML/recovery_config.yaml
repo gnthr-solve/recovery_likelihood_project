@@ -3,7 +3,7 @@ HyperParameters:
   batch_size: 200
   epochs: 10
   burnin_offset: 20
-  model_batch_size: 200
+  model_batch_size: 4000
   likelihood_class: RecoveryLikelihood
   optimizer_class: Adam
   optimizer_params:

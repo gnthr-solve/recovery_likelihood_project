@@ -71,6 +71,8 @@ class MultivariateGaussianModel(EnergyModel):
         return grad
 
 
+
+
 """
 Mixture of two Gaussians Model
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -153,7 +155,6 @@ class SimpleGaussianMixtureModel(EnergyModel):
         
         return Z_joint[0], Z_joint[1]
         
-
 
 
 

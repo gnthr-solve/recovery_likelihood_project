@@ -86,6 +86,8 @@ class RecoveryLikelihood(Likelihood):
         grads_data_component = self.adapted_model.avg_param_grad(data_samples)
         grads_model_component = self.adapted_model.avg_param_grad(model_samples)
 
+        #print('Grads Data: ', grads_data_component)
+        #print('Grads Model: ', grads_model_component)
         for name, param in self.adapted_model.params.items():
             param.grad = grads_data_component[name] - grads_model_component[name]
             #print(f'{name} RL grad: \n', param.grad)

@@ -93,12 +93,12 @@ class RecoveryAdapter(EnergyDist):
 Create pdf to plot
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-x = np. linspace(-10,10,1000)
+x = np. linspace(-20,20,1000)
 
 target_w = [-1.2, -0.7, 2, 1]
 poly = Poly(W = target_w, mu = -4, domain = x)
 
-sigma = 0.5
+sigma = 1.5
 adapted_poly = RecoveryAdapter(poly, sigma, x)
 adapted_poly.set_sample(-4)
 
@@ -106,7 +106,7 @@ adapted_poly_2 = RecoveryAdapter(poly, sigma, x)
 adapted_poly_2.set_sample(-7)
 
 target_cos = Cos(W = 1, mu = 2, domain = x)
-start_cos = Cos(W = -0.1, mu = -6, domain = x)
+start_cos = Cos(W = -0.5, mu = -2, domain = x)
 
 adapted_start_cos_1 = RecoveryAdapter(start_cos, sigma, x)
 adapted_start_cos_1.set_sample(2)
@@ -124,8 +124,8 @@ Plot
 
 plt.plot(x, target_cos.pdf(x), label='pdf')
 plt.plot(x, start_cos.pdf(x), label='start pdf')
-plt.plot(x, adapted_start_cos_1.pdf(x), label='recovery pdf')
-plt.plot(x, adapted_start_cos_2.pdf(x), label='recovery pdf')
+#plt.plot(x, adapted_start_cos_1.pdf(x), label='recovery pdf 2')
+#plt.plot(x, adapted_start_cos_2.pdf(x), label='recovery pdf 4')
 
 #plt.plot(x, poly.pdf(x), label='poly pdf')
 #plt.plot(x, adapted_poly.pdf(x), label='recovery pdf -4')
@@ -134,7 +134,7 @@ plt.plot(x, adapted_start_cos_2.pdf(x), label='recovery pdf')
 
 plt.legend()
 plt.gcf().set_size_inches(6,3)
-plt.title(f'Moderated Cosine Model for $w = 1$, $\mu = 2$')
+#plt.title(f'Moderated Cosine Model for $w = 1$, $\mu = 2$')
 #plt.savefig(f'Figures/{sampler_class}_bi{burnin_offset}.png')
 
 plt.show()

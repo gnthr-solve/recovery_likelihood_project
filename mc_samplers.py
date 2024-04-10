@@ -50,7 +50,7 @@ class EnergySampler(ABC):
         ### Template Method ###
         
         #convert num_samples to tensor to use torch.ceil
-        num_samples = torch.tensor(num_samples, dtype=torch.float32) if isinstance(num_samples, int) else num_samples
+        num_samples = torch.tensor(num_samples, dtype=torch.float32) if isinstance(num_samples, (int, float)) else num_samples
 
         chain_length = int(torch.ceil( num_samples / self.chain_num )) + int(burnin_offset)
         #print(chain_length)
