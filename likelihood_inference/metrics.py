@@ -5,7 +5,7 @@ import pandas as pd
 
 from abc import ABC, abstractmethod
 
-from helper_tools import param_record_to_torch
+from .helper_tools import param_record_to_torch
 
 
 """

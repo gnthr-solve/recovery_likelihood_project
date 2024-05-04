@@ -1,7 +1,7 @@
 
 import torch
 
-from ebm import EnergyModel
+from .ebm import EnergyModel
 
 
 """

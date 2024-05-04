@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from omegaconf import DictConfig, OmegaConf
 
-from helper_tools import param_dict_tolist, param_dict_to_hydra
+from .helper_tools import param_dict_tolist, param_dict_to_hydra
 
 
 """
@@ -55,7 +55,7 @@ class Parameterset(ABC):
 
         #content = {self.__class__.__name__: content_dict}
         content = {self.__class__.__name__: {
-                '_target_': f'experiment_params.{self.__class__.__name__}',
+                '_target_': f'likelihood_inference.experiment_params.{self.__class__.__name__}',
                 **content_dict
             }
         }

@@ -13,10 +13,12 @@ def main():
     from hydra import initialize, compose
     from hydra.utils import instantiate
     from pathlib import Path
-    from experiment import Experiment
-    from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
-    from result_manager import ResultManager
-    from metrics import FrobeniusError, LpError, SimplexLpError, ParameterAssessor
+
+    from likelihood_inference.experiment import Experiment
+    from likelihood_inference.training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
+    from likelihood_inference.result_manager import ResultManager
+    from likelihood_inference.metrics import FrobeniusError, LpError, SimplexLpError, ParameterAssessor
+
     from timing_decorators import timing_decorator
 
     # check computation backend to use
@@ -131,7 +133,7 @@ def unit_test():
     from tqdm import tqdm
     
     from timing_decorators import timing_decorator
-    from experiment import ExperimentBuilder
+    from likelihood_inference.experiment import ExperimentBuilder
 
     # check computation backend to use
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

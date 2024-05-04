@@ -5,14 +5,15 @@ import hashlib
 import pandas as pd
 
 from datetime import datetime
-from ebm import EnergyModel
-from mc_samplers import EnergySampler
-from recovery_adapter import RecoveryAdapter
-from likelihood import RecoveryLikelihood
-from experiment_params import ModelParameters, SamplingParameters, HyperParameters
-from helper_tools import retrieve_class
-from training_procedure import TrainingProcedure
-from training_observer import Observer
+
+from .ebm import EnergyModel
+from .mc_samplers import EnergySampler
+from .recovery_adapter import RecoveryAdapter
+from .likelihood import RecoveryLikelihood
+from .experiment_params import ModelParameters, SamplingParameters, HyperParameters
+from .helper_tools import retrieve_class
+from .training_procedure import TrainingProcedure
+from .training_observer import Observer
 
 """
 ExperimentBuilder
@@ -26,7 +27,7 @@ class ExperimentBuilder:
 
     def setup_model(self, model_parameters: ModelParameters):
 
-        model_type = retrieve_class('test_models', model_parameters['model_class'])
+        model_type = retrieve_class('likelihood_inference.test_models', model_parameters['model_class'])
 
         start_params = model_parameters['start_params']
 
@@ -42,14 +43,14 @@ class ExperimentBuilder:
     
     def setup_sampler(self, model: EnergyModel, start_batch: torch.Tensor, sampling_parameters: SamplingParameters):
 
-        sampler_type = retrieve_class('mc_samplers', sampling_parameters['sampler_class'])
+        sampler_type = retrieve_class('likelihood_inference.mc_samplers', sampling_parameters['sampler_class'])
         
         return sampler_type(energy_model = model, start_batch = start_batch, **sampling_parameters)
     
 
     def setup_likelihood(self, model: EnergyModel, sampler: EnergySampler, hyper_parameters: HyperParameters):
         
-        likelihood_type = retrieve_class('likelihood', hyper_parameters['likelihood_class'])
+        likelihood_type = retrieve_class('likelihood_inference.likelihood', hyper_parameters['likelihood_class'])
 
         return likelihood_type(model, sampler)
     

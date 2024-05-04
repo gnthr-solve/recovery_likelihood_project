@@ -1,9 +1,9 @@
 
 import torch
 
-from ebm import EnergyModel
-from mc_samplers import EnergySampler
-from recovery_adapter import RecoveryAdapter
+from .ebm import EnergyModel
+from .mc_samplers import EnergySampler
+from .recovery_adapter import RecoveryAdapter
 
 
 

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from omegaconf import DictConfig, OmegaConf
 
-from experiment_params import ModelParameters, SamplingParameters, HyperParameters
+from likelihood_inference.experiment_params import ModelParameters, SamplingParameters, HyperParameters
 
 
 result_directory = Path('./Experiment_Results')

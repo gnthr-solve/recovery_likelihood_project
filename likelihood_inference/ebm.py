@@ -5,7 +5,7 @@ import typing
 
 from abc import ABC, abstractmethod
 from typing import Any
-from helper_tools import enable_grad_decorator
+from .helper_tools import enable_grad_decorator
 
 """
 Energy Model Base Class

@@ -4,9 +4,9 @@ import torch.linalg as tla
 
 from abc import ABC, abstractmethod
 
-from ebm import EnergyModel
-from gaussian_iter_strategies import IterStrategy, StdIterStrategy, MomentumIterStrategy
-from helper_tools import no_grad_decorator, quadratic_form_batch
+from .ebm import EnergyModel
+from .gaussian_iter_strategies import IterStrategy, StdIterStrategy, MomentumIterStrategy
+from .helper_tools import no_grad_decorator, quadratic_form_batch
 from timing_decorators import timing_decorator
 
 

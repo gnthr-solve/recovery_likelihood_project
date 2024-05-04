@@ -5,7 +5,7 @@ import pandas as pd
 
 from abc import ABC, abstractmethod
 
-from recovery_adapter import RecoveryAdapter
+from .recovery_adapter import RecoveryAdapter
 
 """
 This file contains the Subject interface used by the TrainingProcedure 

@@ -5,10 +5,11 @@ import pandas as pd
 from hydra import initialize, compose
 from hydra.utils import instantiate
 from pathlib import Path
-from experiment import Experiment
-from training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
-from result_manager import ResultManager
-from metrics import FrobeniusError, LpError
+
+from likelihood_inference.experiment import Experiment
+from likelihood_inference.training_observer import TimingObserver, ParameterObserver, LikelihoodObserver
+from likelihood_inference.result_manager import ResultManager
+from likelihood_inference.metrics import FrobeniusError, LpError
 
 from test_distributions import UnivPolynomial
 

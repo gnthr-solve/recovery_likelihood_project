@@ -7,11 +7,11 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from tqdm import trange, tqdm
 
-from ebm import EnergyModel
-from test_models import MultivariateGaussianModel
-from likelihood import Likelihood, RecoveryLikelihood
+from .ebm import EnergyModel
+from .test_models import MultivariateGaussianModel
+from .likelihood import Likelihood, RecoveryLikelihood
 
-from training_observer import Subject
+from .training_observer import Subject
 
 
 

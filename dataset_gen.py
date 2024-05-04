@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from scipy.stats.sampling import NumericalInversePolynomial
 from scipy.integrate import trapezoid, quad
 
-from ebm import EnergyModel
+from likelihood_inference.ebm import EnergyModel
 
 """
 File to generate the training datasets for test models.

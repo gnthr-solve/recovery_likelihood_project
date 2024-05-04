@@ -7,9 +7,9 @@ from hydra import initialize, compose
 from hydra.utils import instantiate
 from pathlib import Path
 
-from test_models import UnivPolynomial, UnivModeratedCosine
-from experiment_params import SamplingParameters
-from experiment import ExperimentBuilder
+from likelihood_inference.test_models import UnivPolynomial, UnivModeratedCosine
+from likelihood_inference.experiment_params import SamplingParameters
+from likelihood_inference.experiment import ExperimentBuilder
 
 """
 Sampler Setup Functions

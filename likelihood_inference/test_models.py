@@ -4,8 +4,8 @@ import torch.linalg as tla
 
 #from torch.nn import Softmax
 
-from ebm import EnergyModel
-from helper_tools import quadratic_form_batch, no_grad_decorator, NoGradDescriptor
+from .ebm import EnergyModel
+from .helper_tools import quadratic_form_batch, no_grad_decorator, NoGradDescriptor
 from timing_decorators import timing_decorator
 
 """
