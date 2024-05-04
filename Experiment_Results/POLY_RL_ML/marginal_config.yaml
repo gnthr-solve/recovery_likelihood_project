@@ -1,5 +1,5 @@
 HyperParameters:
-  _target_: experiment_params.HyperParameters
+  _target_: likelihood_inference.HyperParameters
   batch_size: 200
   epochs: 10
   burnin_offset: 10
@@ -12,7 +12,7 @@ HyperParameters:
   scheduler_params:
     gamma: 0.9
 ModelParameters:
-  _target_: experiment_params.ModelParameters
+  _target_: likelihood_inference.ModelParameters
   model_class: UnivPolynomial
   target_params:
     W:
@@ -35,7 +35,7 @@ ModelParameters:
     _target_: helper_tools.convert_to_tensor
     data: 1.0
 SamplingParameters:
-  _target_: experiment_params.SamplingParameters
+  _target_: likelihood_inference.SamplingParameters
   sampler_class: HMCSampler
   epsilon:
     _target_: helper_tools.convert_to_tensor
