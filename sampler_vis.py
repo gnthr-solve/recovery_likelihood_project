@@ -74,9 +74,13 @@ start_batch_name = 'normal_start_batch.pt'
 dataset_name = 'dataset.pt'
 
 print(experiment_dir)
+
 ### Load from directory ###
-start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
 dataset = torch.load(experiment_dir.joinpath(dataset_name))
+
+#start_batch = torch.load(experiment_dir.joinpath(start_batch_name))
+start_batch = -3.2 * torch.ones(size = (200,1))
+
 
 
 
@@ -84,15 +88,16 @@ dataset = torch.load(experiment_dir.joinpath(dataset_name))
 Model Setup
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-#W = torch.tensor([-1.2, -0.7, 2, 1], dtype = torch.float32)
-#model = UnivPolynomial(W)
+W = torch.tensor([-1.2, -0.7, 2, 1], dtype = torch.float32)
+model = UnivPolynomial(W)
 
 W = torch.tensor(1, dtype = torch.float32)
 mu = torch.tensor(2, dtype = torch.float32)
-model = UnivModeratedCosine(W = W, mu = mu)
+#model = UnivModeratedCosine(W = W, mu = mu)
 
 
-x = np.linspace(-25,25,2000)
+#x = np.linspace(-25,25,2000)
+x = np.linspace(-5,5,2000)
 
 def ebm(x):
 
@@ -113,17 +118,22 @@ Sampler Setup
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
 sampler_classes = [
-    #'ULASampler', 
+    'ULASampler', 
     'MALASampler', 
     'HMCSampler'
 ]
 epsilons = [
     torch.tensor(1e-1, dtype = torch.float32),
-    #torch.tensor(1e-2, dtype = torch.float32),
+    torch.tensor(1e-2, dtype = torch.float32),
     #torch.tensor(1e-3, dtype = torch.float32),
 ]
 
 sampling_parameters_dict = setup_sampler_params(sampler_classes = sampler_classes, epsilons = epsilons)
+print(sampling_parameters_dict.keys())
+sampling_parameters_dict.pop('MALASampler, $\epsilon = 0.01$')
+sampling_parameters_dict.pop('HMCSampler, $\epsilon = 0.01$')
+sampling_parameters_dict.pop('ULASampler, $\epsilon = 0.1$')
+
 sampler_dict = setup_samplers(model = model, start_batch = start_batch, sampling_parameters_dict = sampling_parameters_dict)
 
 

@@ -34,12 +34,12 @@ comparison_columns = ['Sampler', 'Epsilon', 'Likelihood', 'Perturbation Variance
 unique_settings = ana_df[comparison_columns].drop_duplicates()
 print(unique_settings)
 
-for index, setting in enumerate(unique_settings.itertuples(index = False, name= None)):
+# for index, setting in enumerate(unique_settings.itertuples(index = False, name= None)):
 
-    matching_mask = (ana_df[comparison_columns] == setting).all(axis=1)
-    setting_slice = ana_df.loc[matching_mask]
-    print(setting)
-    print(len(setting_slice))
+#     matching_mask = (ana_df[comparison_columns] == setting).all(axis=1)
+#     setting_slice = ana_df.loc[matching_mask]
+#     print(setting)
+#     print(len(setting_slice))
 
     
 """
@@ -51,12 +51,12 @@ experiment_name = 'COS_RL_ML'
 experiment_dir = result_directory / experiment_name
 
 result_names = [
-    'results_ML_ULA.csv', 
+    #'results_ML_ULA.csv', 
     'results_ML_MALA.csv', 
-    'results_ML_HMC.csv',
-    'results_RL_ULA.csv', 
+    #'results_ML_HMC.csv',
+    #'results_RL_ULA.csv', 
     'results_RL_MALA.csv', 
-    'results_RL_HMC.csv',
+    #'results_RL_HMC.csv',
 ]
 
 result_df_list = []
@@ -73,7 +73,7 @@ print(len(complete_results_df))
 #combinations = complete_results_df[interest_columns].drop_duplicates()
 #print(combinations)
 
-result_out_path = experiment_dir.joinpath('results_complete.csv')
+result_out_path = experiment_dir.joinpath('results_MALA_low_burnin.csv')
 complete_results_df.to_csv(result_out_path, index = False)
 """
 

@@ -155,6 +155,8 @@ class MALASampler(EnergySampler):
 
         u_batch = torch.rand(alpha.shape)
         accept_mask = (u_batch <= alpha)
+        #print(accept_mask.shape)
+        #print(accept_mask.sum())
 
         new_state_batch = torch.where(accept_mask.unsqueeze(1), x_hat_batch, x_batch)
         return new_state_batch
@@ -222,7 +224,9 @@ class HMCSampler(EnergySampler):
 
         u_batch = torch.rand(alpha.shape)
         accept_mask = u_batch <= alpha
-        
+        #print(accept_mask.shape)
+        #print(accept_mask.sum())
+
         new_state_batch = torch.where(accept_mask.unsqueeze(1), x_hat_batch, x_batch)
         return new_state_batch
 

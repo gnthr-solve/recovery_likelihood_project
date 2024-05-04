@@ -28,16 +28,16 @@ def main():
     experiment_name = 'COS_RL_ML'
     experiment_dir = result_directory / experiment_name
 
-    #config_name = 'recovery_config.yaml'
-    config_name = 'marginal_config.yaml'
+    config_name = 'recovery_config.yaml'
+    #config_name = 'marginal_config.yaml'
 
     dataset_name = 'dataset.pt'
     #start_batch_name = 'start_batch.pt'
     #start_batch_name = 'zeros_start_batch.pt'
     start_batch_name = 'normal_start_batch.pt'
 
-    #result_name = 'results_RL_MALA.csv'
-    result_name = 'results_ML_MALA.csv'
+    result_name = 'results_RL_MALA.csv'
+    #result_name = 'results_ML_MALA.csv'
 
     print(experiment_dir)
     print(config_name)
@@ -146,8 +146,8 @@ def unit_test():
     #config_name = 'marginal_config.yaml'
     dataset_name = 'dataset.pt'
     #start_batch_name = 'start_batch.pt'
-    start_batch_name = 'zeros_start_batch.pt'
-    #start_batch_name = 'normal_start_batch.pt'
+    #start_batch_name = 'zeros_start_batch.pt'
+    start_batch_name = 'normal_start_batch.pt'
 
     print(experiment_dir)
 
@@ -220,7 +220,8 @@ def unit_test():
                 
             # perform gradient descent step along model.theta.grad
             optimizer.step()
-
+        
+        #break
             
         if scheduler:    
             scheduler.step()
@@ -233,8 +234,8 @@ def unit_test():
 
 if __name__=="__main__":
 
-    main()
-    #unit_test()
+    #main()
+    unit_test()
    
 
     
