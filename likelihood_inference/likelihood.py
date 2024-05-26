@@ -24,7 +24,7 @@ class Likelihood:
         self.sampler = sampler
 
 
-    def unnormalised_log_likelihood(self, data_samples: torch.Tensor):
+    def unnormalised_log_likelihood(self, data_samples: torch.Tensor) -> torch.Tensor:
 
         energy_values = -self.energy_model(data_samples)
 
@@ -43,7 +43,7 @@ class Likelihood:
             #print(f'{name} LL grad: \n', param.grad)
 
 
-    def gen_model_samples(self, batch_size: int, burnin_offset: int, **kwargs):
+    def gen_model_samples(self, batch_size: int, burnin_offset: int, **kwargs) -> torch.Tensor:
 
         num_samples = torch.tensor(batch_size, dtype = torch.float32)
         model_samples = self.sampler.sample(num_samples = num_samples, burnin_offset = burnin_offset)
@@ -72,7 +72,7 @@ class RecoveryLikelihood(Likelihood):
         self.sampler = sampler
     
 
-    def unnormalised_log_likelihood(self, data_samples: torch.Tensor):
+    def unnormalised_log_likelihood(self, data_samples: torch.Tensor) -> torch.Tensor:
 
         energy_values = -self.adapted_model(data_samples)
 
@@ -93,7 +93,7 @@ class RecoveryLikelihood(Likelihood):
             #print(f'{name} RL grad: \n', param.grad)
         
 
-    def gen_model_samples(self, data_samples: torch.Tensor, batch_size: int, burnin_offset: int, **kwargs):
+    def gen_model_samples(self, data_samples: torch.Tensor, batch_size: int, burnin_offset: int, **kwargs) -> torch.Tensor:
 
         perturbed_data_samples = data_samples + self.adapted_model.sigma * torch.randn_like(data_samples)
         self.adapted_model.set_perturbed_samples(perturbed_samples = perturbed_data_samples)

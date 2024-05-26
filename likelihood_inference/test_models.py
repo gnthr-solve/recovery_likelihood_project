@@ -33,7 +33,7 @@ class MultivariateGaussianModel(EnergyModel):
         self.Sigma_inv = (lambda : torch.inverse(self.params['Sigma']))
 
 
-    def kernel(self, x: torch.Tensor):
+    def kernel(self, x: torch.Tensor) -> torch.Tensor:
 
         # x can be of shape (d,) or (n, d)
         x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
@@ -53,7 +53,7 @@ class MultivariateGaussianModel(EnergyModel):
         return kernel_value
 
 
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         energy = -torch.log(self.kernel(x))
         #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
@@ -61,7 +61,7 @@ class MultivariateGaussianModel(EnergyModel):
         return energy
     
 
-    def energy_grad(self, x: torch.Tensor):
+    def energy_grad(self, x: torch.Tensor) -> torch.Tensor:
 
         mu = self.params['mu']  # Shape (1, d)
         Sigma_inv = self.Sigma_inv()
@@ -101,7 +101,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         self.dim = start_mu_1.shape[-1]
 
     #@timing_decorator
-    def kernel(self, x: torch.Tensor):
+    def kernel(self, x: torch.Tensor) -> torch.Tensor:
 
         # x can be of shape (d,) or (n, d)
         x = torch.unsqueeze(x, dim=0) if x.dim() == 1 else x # shape (1, d) or (n, d)
@@ -119,7 +119,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
     
 
     #@timing_decorator
-    def component_kernel(self, x: torch.Tensor, component: int):
+    def component_kernel(self, x: torch.Tensor, component: int) -> torch.Tensor:
 
         # Reshape mu and Sigma_inv to support broadcasting
         mu = self.params[f'mu_{component}'].unsqueeze(0)  # Shape (1, d)
@@ -136,7 +136,7 @@ class SimpleGaussianMixtureModel(EnergyModel):
         return kernel_value
 
 
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         energy = -torch.log(self.kernel(x))
         #energy = npl.multi_dot([(x - self.mu), self.Sigma_inv, (x - self.mu)])/2
@@ -173,7 +173,7 @@ class UnivPolynomial(EnergyModel):
         self.params['W'] = start_W.clone()
 
     
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         W = self.params['W']
         #Squeeze necessary to allow sampler batches of shape (n, 1)
@@ -190,7 +190,7 @@ class UnivPolynomial(EnergyModel):
         return result
     
 
-    def energy_grad(self, x: torch.Tensor):
+    def energy_grad(self, x: torch.Tensor) -> torch.Tensor:
         
         W = self.params['W']
         #Squeeze necessary to allow sampler batches of shape (n, 1)
@@ -208,7 +208,7 @@ class UnivPolynomial(EnergyModel):
         return grad
     
     
-    def avg_param_grad(self, x: torch.Tensor):
+    def avg_param_grad(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
 
         W = self.params['W']
         x = x.squeeze()
@@ -235,7 +235,7 @@ class UnivModeratedCosine(EnergyModel):
         self.params['mu'] = mu.clone()
 
     #@timing_decorator
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         W = self.params['W']
         mu = self.params['mu']
@@ -247,7 +247,7 @@ class UnivModeratedCosine(EnergyModel):
         return energy.squeeze()
 
     
-    def energy_grad(self, x: torch.Tensor):
+    def energy_grad(self, x: torch.Tensor) -> torch.Tensor:
 
         W = self.params['W']
         mu = self.params['mu']
@@ -260,7 +260,7 @@ class UnivModeratedCosine(EnergyModel):
     
     
     @no_grad_decorator
-    def avg_param_grad(self, x: torch.Tensor):
+    def avg_param_grad(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
 
         W = self.params['W']#.detach()
         mu = self.params['mu']#.detach()
@@ -290,7 +290,7 @@ class SimpleLinear(EnergyModel):
         self.params['C'] = C_0.clone()
 
     
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         theta = self.params['theta']
         C = self.params['C']

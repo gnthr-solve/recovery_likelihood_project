@@ -33,7 +33,7 @@ class IterStrategy(ABC):
         pass
     
     @abstractmethod
-    def __next__(self):
+    def __next__(self) -> torch.Tensor:
         pass
 
 """
@@ -64,7 +64,7 @@ class StdIterStrategy(IterStrategy):
         return self
 
 
-    def __next__(self):
+    def __next__(self) -> torch.Tensor:
 
         return next(self.sample_iterator)
     
@@ -97,6 +97,6 @@ class MomentumIterStrategy(IterStrategy):
         return self
 
 
-    def __next__(self):
+    def __next__(self) -> torch.Tensor:
 
         return next(self.sample_iterator)

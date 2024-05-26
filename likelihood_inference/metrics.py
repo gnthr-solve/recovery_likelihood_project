@@ -23,7 +23,7 @@ class ParameterMetric(ABC):
         self.name = None
 
     @abstractmethod
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> torch.Tensor:
         pass
 
 
@@ -33,7 +33,7 @@ class FrobeniusError(ParameterMetric):
     def __init__(self):
         self.name = 'Frob. Error'
 
-    def __call__(self, target_matrix: torch.Tensor, model_matrix_batch: torch.Tensor):
+    def __call__(self, target_matrix: torch.Tensor, model_matrix_batch: torch.Tensor) -> torch.Tensor:
         """
         Compute the Frobenius norm between a target matrix and a batch of model matrices.
 
@@ -59,7 +59,7 @@ class LpError(ParameterMetric):
         self.p = p
         self.name = f'L{p}-Error'
 
-    def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor):
+    def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor) -> torch.Tensor:
 
         difference_vector = target_vector.unsqueeze(0) - model_vector_batch
 
@@ -72,7 +72,7 @@ class SimplexLpError(ParameterMetric):
         self.p = p
         self.name = f'L{p}-Error'
 
-    def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor):
+    def __call__(self, target_vector: torch.Tensor, model_vector_batch: torch.Tensor) -> torch.Tensor:
 
         difference_vector = target_vector.unsqueeze(0) - model_vector_batch.softmax(dim = -1)
 
@@ -101,7 +101,7 @@ class ParameterAssessor:
             self.param_metrics[param_name] = metric
 
 
-    def apply_param_metrics_to_df(self, df: pd.DataFrame):
+    def apply_param_metrics_to_df(self, df: pd.DataFrame) -> pd.DataFrame:
 
         df = df.copy()
         for param_name, metric in self.param_metrics.items():

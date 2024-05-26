@@ -25,7 +25,7 @@ class RecoveryAdapter(EnergyModel):
         self.params = energy_model.params
 
 
-    def energy(self, x: torch.Tensor):
+    def energy(self, x: torch.Tensor) -> torch.Tensor:
 
         energy = self.energy_model.energy(x)
         
@@ -34,7 +34,7 @@ class RecoveryAdapter(EnergyModel):
         return energy + conditional_term
 
 
-    def energy_grad(self, x: torch.Tensor):
+    def energy_grad(self, x: torch.Tensor) -> torch.Tensor:
         
         grad = self.energy_model.energy_grad(x)
         
@@ -43,7 +43,7 @@ class RecoveryAdapter(EnergyModel):
         return grad - conditional_grad
 
 
-    def avg_param_grad(self, x: torch.Tensor):
+    def avg_param_grad(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         return self.energy_model.avg_param_grad(x)
 
 

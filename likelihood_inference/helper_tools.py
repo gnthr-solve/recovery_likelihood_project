@@ -84,7 +84,7 @@ def numpy_adapter(func):
 Torch Functions
 -------------------------------------------------------------------------------------------------------------------------------------------
 """
-def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor):
+def quadratic_form_batch(x_batch: torch.Tensor, matrix: torch.Tensor) -> torch.Tensor:
     """
     Calculates the quadratic form x^T M x for a batch of tensors x_batch.
     """
@@ -150,7 +150,7 @@ def param_dict_to_hydra(param_dict: dict):
     return output_dict
 
 
-def convert_to_tensor(data):
+def convert_to_tensor(data) -> torch.Tensor:
     return torch.tensor(data=data, dtype= torch.float32)
 
 
@@ -163,7 +163,7 @@ Here the problem is that pandas stores tensors and arrays as strings.
 This function evaluates such strings, converts them to numpy arrays, stacks them along the batch dimension 
 and returns them as a torch.Tensor.
 """
-def param_record_to_torch(param_column):
+def param_record_to_torch(param_column) -> torch.Tensor:
     
     func = lambda s: np.array(eval(s))
 

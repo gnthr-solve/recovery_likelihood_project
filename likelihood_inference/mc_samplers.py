@@ -36,7 +36,7 @@ class EnergySampler(ABC):
 
 
     @abstractmethod
-    def _iterate(self, x_batch: torch.Tensor):
+    def _iterate(self, x_batch: torch.Tensor) -> torch.Tensor:
         ### Hook Method ###
         pass
 
@@ -46,7 +46,7 @@ class EnergySampler(ABC):
 
 
     @no_grad_decorator
-    def sample(self, num_samples: int, burnin_offset: int = 0): 
+    def sample(self, num_samples: int, burnin_offset: int = 0) -> torch.Tensor: 
         ### Template Method ###
         
         #convert num_samples to tensor to use torch.ceil
@@ -91,7 +91,7 @@ class ULASampler(EnergySampler):
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.Tensor):
+    def _iterate(self, x_batch: torch.Tensor) -> torch.Tensor:
         
         # Compute the gradient of the energy function at x_batch
         grad_batch = self.energy_model.energy_grad(x_batch)
@@ -124,7 +124,7 @@ class MALASampler(EnergySampler):
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.Tensor):
+    def _iterate(self, x_batch: torch.Tensor) -> torch.Tensor:
         
         # Compute the gradient of the energy function at x
         grad_batch = self.energy_model.energy_grad(x_batch)
@@ -139,7 +139,7 @@ class MALASampler(EnergySampler):
     
 
     #@timing_decorator
-    def _accept_reject(self, x_batch: torch.Tensor, x_hat_batch: torch.Tensor):
+    def _accept_reject(self, x_batch: torch.Tensor, x_hat_batch: torch.Tensor) -> torch.Tensor:
         
         x_batch_energy = self.energy_model.energy(x_batch)
         x_hat_batch_energy = self.energy_model.energy(x_hat_batch)
@@ -183,7 +183,7 @@ class HMCSampler(EnergySampler):
 
 
     @timing_decorator
-    def _iterate(self, x_batch: torch.Tensor):
+    def _iterate(self, x_batch: torch.Tensor) -> torch.Tensor:
         
         p_batch = next(self.z_iterator)
         x_hat_batch = x_batch
@@ -213,7 +213,7 @@ class HMCSampler(EnergySampler):
 
 
     #@timing_decorator
-    def _accept_reject(self, x_batch, p_batch, x_hat_batch, p_hat_batch):
+    def _accept_reject(self, x_batch, p_batch, x_hat_batch, p_hat_batch) -> torch.Tensor:
 
         U_batch = self.energy_model.energy(x_batch)
         U_hat_batch = self.energy_model.energy(x_hat_batch)
